@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="description" content="정철의 가사 「관동별곡」을 여정·견문·감상의 흐름대로 직접 걸어 보는 고등학생용 학습 게임">
+<title>관동별곡: 잃어버린 시구</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body>
+<div id="stage">
+  <canvas id="game" aria-label="게임 화면"></canvas>
+  <div id="ui"></div>
+  <div id="touch" aria-hidden="true"></div>
+  <div id="boot">불러오는 중…</div>
+</div>
+
+<!-- 학습 데이터 (선생님이 직접 고칠 수 있는 파일) -->
+<script src="js/data/text.js?v=1"></script>
+<script src="js/data/game.js?v=1"></script>
+<script src="js/data/sprites.js?v=1"></script>
+
+<!-- 엔진 -->
+<script src="js/core/util.js?v=1"></script>
+<script src="js/core/input.js?v=1"></script>
+<script src="js/core/audio.js?v=1"></script>
+<script src="js/core/assets.js?v=1"></script>
+<script src="js/core/fx.js?v=1"></script>
+<script src="js/core/save.js?v=1"></script>
+<script src="js/core/ui.js?v=1"></script>
+
+<!-- 게임 -->
+<script src="js/game/world.js?v=1"></script>
+<script src="js/game/player.js?v=1"></script>
+<script src="js/game/entities.js?v=1"></script>
+<script src="js/game/bosses.js?v=1"></script>
+<script src="js/game/levels.js?v=1"></script>
+<script src="js/game/scenes.js?v=1"></script>
+<script src="js/game/map.js?v=1"></script>
+<script src="js/game/ending.js?v=1"></script>
+<script src="js/main.js?v=1"></script>
+</body>
+</html>

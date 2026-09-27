@@ -1,0 +1,7 @@
+# Codex가 만든 원본 이미지(68MB). 게임은 가공된 assets/sprites·bg·ui만 쓴다.
+assets/raw/
+# 로컬 도구 설정
+.claude/
+__pycache__/
+tools/genqueue.log
+.omc/

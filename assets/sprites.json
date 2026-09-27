@@ -1,0 +1,550 @@
+{
+ "hero": {
+  "img": "assets/sprites/hero.png",
+  "fw": 96,
+  "fh": 64,
+  "px": 40,
+  "py": 62,
+  "cols": 8,
+  "anims": {
+   "idle": {
+    "start": 0,
+    "n": 4,
+    "fps": 5
+   },
+   "walk": {
+    "start": 4,
+    "n": 6,
+    "fps": 10
+   },
+   "jump": {
+    "start": 10,
+    "n": 4,
+    "fps": 8
+   },
+   "attack": {
+    "start": 14,
+    "n": 6,
+    "fps": 18
+   },
+   "hurt": {
+    "start": 20,
+    "n": 2,
+    "fps": 8
+   },
+   "cast": {
+    "start": 22,
+    "n": 4,
+    "fps": 10
+   },
+   "glide": {
+    "start": 26,
+    "n": 4,
+    "fps": 8
+   }
+  }
+ },
+ "horse": {
+  "img": "assets/sprites/horse.png",
+  "fw": 112,
+  "fh": 80,
+  "px": 56,
+  "py": 78,
+  "cols": 8,
+  "anims": {
+   "gallop": {
+    "start": 0,
+    "n": 6,
+    "fps": 12
+   },
+   "hjump": {
+    "start": 6,
+    "n": 3,
+    "fps": 8
+   }
+  }
+ },
+ "enemies": {
+  "img": "assets/sprites/enemies.png",
+  "fw": 64,
+  "fh": 48,
+  "px": 32,
+  "py": 46,
+  "cols": 8,
+  "anims": {
+   "blob": {
+    "start": 0,
+    "n": 4,
+    "fps": 8
+   },
+   "blobhurt": {
+    "start": 4,
+    "n": 1,
+    "fps": 8
+   },
+   "blobpop": {
+    "start": 5,
+    "n": 3,
+    "fps": 12
+   },
+   "crow": {
+    "start": 8,
+    "n": 3,
+    "fps": 10
+   },
+   "magpie": {
+    "start": 11,
+    "n": 3,
+    "fps": 10
+   },
+   "cloud": {
+    "start": 14,
+    "n": 2,
+    "fps": 3
+   }
+  }
+ },
+ "npcs": {
+  "img": "assets/sprites/npcs.png",
+  "fw": 112,
+  "fh": 80,
+  "px": 56,
+  "py": 78,
+  "cols": 8,
+  "anims": {
+   "crane": {
+    "start": 0,
+    "n": 4,
+    "fps": 7
+   },
+   "gull": {
+    "start": 4,
+    "n": 3,
+    "fps": 8
+   },
+   "gullstand": {
+    "start": 7,
+    "n": 1,
+    "fps": 8
+   },
+   "sage": {
+    "start": 8,
+    "n": 2,
+    "fps": 2
+   },
+   "sagecrane": {
+    "start": 10,
+    "n": 2,
+    "fps": 6
+   }
+  }
+ },
+ "libai": {
+  "img": "assets/sprites/libai.png",
+  "fw": 150,
+  "fh": 116,
+  "px": 75,
+  "py": 114,
+  "cols": 8,
+  "anims": {
+   "idle": {
+    "start": 0,
+    "n": 4,
+    "fps": 6
+   },
+   "attack": {
+    "start": 4,
+    "n": 3,
+    "fps": 8
+   },
+   "hurt": {
+    "start": 7,
+    "n": 1,
+    "fps": 8
+   }
+  }
+ },
+ "whale": {
+  "img": "assets/sprites/whale.png",
+  "fw": 380,
+  "fh": 270,
+  "px": 190,
+  "py": 268,
+  "cols": 8,
+  "anims": {
+   "rise": {
+    "start": 0,
+    "n": 3,
+    "fps": 4
+   },
+   "dive": {
+    "start": 3,
+    "n": 2,
+    "fps": 4
+   },
+   "foam": {
+    "start": 5,
+    "n": 1,
+    "fps": 8
+   }
+  }
+ },
+ "dragon": {
+  "img": "assets/sprites/dragon.png",
+  "fw": 340,
+  "fh": 200,
+  "px": 170,
+  "py": 198,
+  "cols": 8,
+  "anims": {
+   "rest": {
+    "start": 0,
+    "n": 1,
+    "fps": 8
+   },
+   "rain": {
+    "start": 1,
+    "n": 1,
+    "fps": 8
+   }
+  }
+ },
+ "_props": {
+  "scroll": {
+   "img": "assets/sprites/scroll.png",
+   "w": 26,
+   "h": 18
+  },
+  "okjeol": {
+   "img": "assets/sprites/okjeol.png",
+   "w": 17,
+   "h": 26
+  },
+  "feather": {
+   "img": "assets/sprites/feather.png",
+   "w": 19,
+   "h": 26
+  },
+  "inkstick": {
+   "img": "assets/sprites/inkstick.png",
+   "w": 20,
+   "h": 15
+  },
+  "heart": {
+   "img": "assets/sprites/heart.png",
+   "w": 16,
+   "h": 14
+  },
+  "tablet": {
+   "img": "assets/sprites/tablet.png",
+   "w": 30,
+   "h": 44
+  },
+  "pillar": {
+   "img": "assets/sprites/pillar.png",
+   "w": 60,
+   "h": 72
+  },
+  "danseo": {
+   "img": "assets/sprites/danseo.png",
+   "w": 72,
+   "h": 54
+  },
+  "grass_dead": {
+   "img": "assets/sprites/grass_dead.png",
+   "w": 37,
+   "h": 28
+  },
+  "grass_live": {
+   "img": "assets/sprites/grass_live.png",
+   "w": 41,
+   "h": 30
+  },
+  "rose": {
+   "img": "assets/sprites/rose.png",
+   "w": 44,
+   "h": 34
+  },
+  "bamboo": {
+   "img": "assets/sprites/bamboo.png",
+   "w": 99,
+   "h": 88
+  },
+  "pine": {
+   "img": "assets/sprites/pine.png",
+   "w": 148,
+   "h": 110
+  },
+  "boulder": {
+   "img": "assets/sprites/boulder.png",
+   "w": 61,
+   "h": 44
+  },
+  "wine": {
+   "img": "assets/sprites/wine.png",
+   "w": 22,
+   "h": 26
+  },
+  "boat": {
+   "img": "assets/sprites/boat.png",
+   "w": 84,
+   "h": 38
+  },
+  "pavilion": {
+   "img": "assets/sprites/pavilion.png",
+   "w": 150,
+   "h": 138
+  },
+  "nugak": {
+   "img": "assets/sprites/nugak.png",
+   "w": 210,
+   "h": 157
+  },
+  "gate": {
+   "img": "assets/sprites/gate.png",
+   "w": 200,
+   "h": 169
+  },
+  "ruins": {
+   "img": "assets/sprites/ruins.png",
+   "w": 190,
+   "h": 90
+  },
+  "signpost": {
+   "img": "assets/sprites/signpost.png",
+   "w": 38,
+   "h": 52
+  },
+  "altar": {
+   "img": "assets/sprites/altar.png",
+   "w": 56,
+   "h": 20
+  }
+ },
+ "_tiles": {
+  "grass": {
+   "img": "assets/sprites/tile_grass.png",
+   "w": 128,
+   "h": 44
+  },
+  "granite": {
+   "img": "assets/sprites/tile_granite.png",
+   "w": 128,
+   "h": 44
+  },
+  "sand": {
+   "img": "assets/sprites/tile_sand.png",
+   "w": 128,
+   "h": 44
+  },
+  "plank": {
+   "img": "assets/sprites/tile_plank.png",
+   "w": 128,
+   "h": 40
+  },
+  "roof": {
+   "img": "assets/sprites/tile_roof.png",
+   "w": 128,
+   "h": 44
+  },
+  "cloud": {
+   "img": "assets/sprites/tile_cloud.png",
+   "w": 160,
+   "h": 44
+  }
+ },
+ "_bg": {
+  "bg_bamboo": {
+   "img": "assets/bg/bg_bamboo.jpg",
+   "w": 1687,
+   "h": 821
+  },
+  "bg_cliff": {
+   "img": "assets/bg/bg_cliff.jpg",
+   "w": 1810,
+   "h": 765
+  },
+  "bg_coast": {
+   "img": "assets/bg/bg_coast.jpg",
+   "w": 1803,
+   "h": 768
+  },
+  "bg_dragonpool": {
+   "img": "assets/bg/bg_dragonpool.jpg",
+   "w": 1830,
+   "h": 756
+  },
+  "bg_heaven": {
+   "img": "assets/bg/bg_heaven.jpg",
+   "w": 1803,
+   "h": 768
+  },
+  "bg_lake": {
+   "img": "assets/bg/bg_lake.jpg",
+   "w": 1803,
+   "h": 768
+  },
+  "bg_moonsea": {
+   "img": "assets/bg/bg_moonsea.jpg",
+   "w": 1830,
+   "h": 756
+  },
+  "bg_palace": {
+   "img": "assets/bg/bg_palace.jpg",
+   "w": 1830,
+   "h": 756
+  },
+  "bg_peaks": {
+   "img": "assets/bg/bg_peaks.jpg",
+   "w": 1830,
+   "h": 756
+  },
+  "bg_river": {
+   "img": "assets/bg/bg_river.jpg",
+   "w": 1830,
+   "h": 756
+  },
+  "bg_road": {
+   "img": "assets/bg/bg_road.jpg",
+   "w": 1830,
+   "h": 756
+  },
+  "bg_ruins": {
+   "img": "assets/bg/bg_ruins.jpg",
+   "w": 1803,
+   "h": 768
+  },
+  "bg_stormsea": {
+   "img": "assets/bg/bg_stormsea.jpg",
+   "w": 1830,
+   "h": 756
+  },
+  "bg_sunrise": {
+   "img": "assets/bg/bg_sunrise.jpg",
+   "w": 1912,
+   "h": 724
+  },
+  "bg_waterfall": {
+   "img": "assets/bg/bg_waterfall.jpg",
+   "w": 1687,
+   "h": 821
+  }
+ },
+ "_ui": {
+  "pt_calm": {
+   "img": "assets/ui/pt_calm.png",
+   "w": 279,
+   "h": 300
+  },
+  "pt_awe": {
+   "img": "assets/ui/pt_awe.png",
+   "w": 282,
+   "h": 300
+  },
+  "pt_sage": {
+   "img": "assets/ui/pt_sage.png",
+   "w": 299,
+   "h": 300
+  },
+  "pt_libai": {
+   "img": "assets/ui/pt_libai.png",
+   "w": 292,
+   "h": 300
+  },
+  "logo": {
+   "img": "assets/ui/logo.png",
+   "w": 820,
+   "h": 269
+  },
+  "title_art": {
+   "img": "assets/ui/title_art.jpg",
+   "w": 1536,
+   "h": 1024
+  },
+  "paper": {
+   "img": "assets/ui/paper.jpg",
+   "w": 1024,
+   "h": 683
+  },
+  "map_peaks": {
+   "img": "assets/ui/map_peaks.png",
+   "w": 96,
+   "h": 81
+  },
+  "map_mountain": {
+   "img": "assets/ui/map_mountain.png",
+   "w": 96,
+   "h": 85
+  },
+  "map_range": {
+   "img": "assets/ui/map_range.png",
+   "w": 96,
+   "h": 54
+  },
+  "map_pavilion": {
+   "img": "assets/ui/map_pavilion.png",
+   "w": 96,
+   "h": 72
+  },
+  "map_gate": {
+   "img": "assets/ui/map_gate.png",
+   "w": 96,
+   "h": 57
+  },
+  "map_waterfall": {
+   "img": "assets/ui/map_waterfall.png",
+   "w": 93,
+   "h": 96
+  },
+  "map_lake": {
+   "img": "assets/ui/map_lake.png",
+   "w": 96,
+   "h": 53
+  },
+  "map_waves": {
+   "img": "assets/ui/map_waves.png",
+   "w": 96,
+   "h": 66
+  },
+  "map_pine": {
+   "img": "assets/ui/map_pine.png",
+   "w": 96,
+   "h": 91
+  },
+  "map_sun": {
+   "img": "assets/ui/map_sun.png",
+   "w": 96,
+   "h": 58
+  },
+  "map_village": {
+   "img": "assets/ui/map_village.png",
+   "w": 96,
+   "h": 55
+  },
+  "map_rider": {
+   "img": "assets/ui/map_rider.png",
+   "w": 72,
+   "h": 96
+  },
+  "pt_sad": {
+   "img": "assets/ui/pt_sad.png",
+   "w": 284,
+   "h": 300
+  },
+  "pt_resolve": {
+   "img": "assets/ui/pt_resolve.png",
+   "w": 282,
+   "h": 300
+  },
+  "pt_ghost": {
+   "img": "assets/ui/pt_ghost.png",
+   "w": 296,
+   "h": 300
+  },
+  "pt_crane": {
+   "img": "assets/ui/pt_crane.png",
+   "w": 268,
+   "h": 300
+  }
+ }
+}
