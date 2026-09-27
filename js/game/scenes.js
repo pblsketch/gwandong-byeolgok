@@ -64,7 +64,8 @@
       if (d.unlock.feather) txt(ctx, '(L 전환)', 34 + (imm ? 58 : 58), 44, 8, 'rgba(255,255,255,.7)', 'left');
     }
     if (w.id === 'EF') {
-      txt(ctx, `🍶 밝힌 마을 ${w.lit || 0} / ${w.villages}`, G.W - 12, 20, 11, '#ffe7a0', 'right');
+      A.drawProp(ctx, 'wine', G.W - 118, 16, { center: true, scale: 0.7 });
+      txt(ctx, `밝힌 마을 ${w.lit || 0} / ${w.villages}`, G.W - 12, 20, 11, '#ffe7a0', 'right');
       ctx.restore();
       return;
     }
@@ -125,6 +126,7 @@
       this.t += dt;
       G.save.data.playTime += dt;
       if (G.ui.blocking > 0) { FX.update(dt * 0.5); return; }
+      if (G.screen.portrait) return;          // 세로로 들고 있으면 잠시 멈춤
       if (I.pressed('pause') && !this.pausing) { this.pause(); return; }
       if (FX.hitstop > 0) { FX.hitstop -= dt; FX.update(0); FX.shakeT > 0 && FX.update(0.0001); return; }
       w.update(dt);
@@ -230,15 +232,18 @@
           <button class="mbtn" data-a="book">관동 편람<small>원문·인물·상징·실제와 상상</small></button>
           <button class="mbtn" data-a="opt">설정</button>
         </div>
+        <button class="btn ghost fullbtn" data-a="full" style="position:absolute;right:calc(var(--u)*12);top:calc(var(--u)*10);background:rgba(243,234,212,.85)">전체 화면</button>
         <div style="position:absolute;right:calc(var(--u)*14);bottom:calc(var(--u)*10);font-size:calc(var(--u)*7.5);color:#3b3328;text-align:right;line-height:1.5;background:rgba(243,234,212,.7);padding:calc(var(--u)*4) calc(var(--u)*8);border-radius:calc(var(--u)*3)">
-          📜 붉은 원문 상자 = 원문 · 🎮 청록 상자 = 게임 속 상상<br>그림: Codex CLI(gpt-image-2) 생성 · 소리: 웹 오디오 합성
+          <b style="font-family:var(--serif);font-size:calc(var(--u)*8.5)">만든이 박준일</b> (온양여자고등학교 국어 교사)<br><b class="mk red">實</b>붉은 두루마리 = 원문 · <b class="mk tealmk">虛</b>청록 상자 = 게임 속 상상<br>그림: Codex CLI(gpt-image-2) 생성 · 소리: 웹 오디오로 합성한 창작 국악
         </div>`, 'menu');
       const btns = Array.from(el.querySelectorAll('.mbtn'));
       const nav = G.ui.focusNav(btns, has ? 1 : 0);
       el.addEventListener('click', async (e) => {
-        const b = e.target.closest('.mbtn'); if (!b || b.disabled) return;
+        const b = e.target.closest('.mbtn,.fullbtn'); if (!b || b.disabled) return;
         G.audio.unlock(); G.audio.sfx('confirm');
         const a = b.dataset.a;
+        if (a === 'full') { G.screen.toggle(); return; }
+        G.screen.auto();
         if (a === 'new') {
           if (has) { const i = await G.ui.choice('저장된 여정을 지우고 처음부터 시작할까요?', ['네, 처음부터', '아니요'], { tag: '<span class="tag note">확인</span>' }); if (i !== 0) return; }
           G.save.reset(); SC.startLevel('P1');

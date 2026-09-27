@@ -26,6 +26,18 @@ html, body { margin: 0; height: 100%; background: #0d0c0a; overflow: hidden; }
 body { font-family: var(--sans); color: var(--ink); -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: none; }
 
 #stage { position: fixed; inset: 0; }
+/* 노치·둥근 모서리를 뺀 안전 영역(크기 계산용) */
+#safe { position: fixed; top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); pointer-events: none; visibility: hidden; }
+/* 세로로 들었을 때 안내 */
+#rotate { word-break: keep-all; position: fixed; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: #0d0c0a; color: #efe3c8; font-family: var(--serif); text-align: center; padding: 24px; }
+#rotate.on { display: flex; }
+#rotate p { margin: 0; font-size: 20px; }
+#rotate b { color: #e0a92a; }
+#rotate button { border: none; border-radius: 10px; padding: 14px 22px; font-size: 17px; font-weight: 700; background: #b3261e; color: #fff4e6; font-family: var(--sans); }
+#rotate small { font-size: 12px; opacity: .6; font-family: var(--sans); }
+#rotate .phone { width: 46px; height: 80px; border: 3px solid #efe3c8; border-radius: 9px; position: relative; animation: turn 2.2s ease-in-out infinite; }
+#rotate .phone::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 10px; height: 3px; margin-left: -5px; border-radius: 2px; background: #efe3c8; }
+@keyframes turn { 0%, 25% { transform: rotate(0); } 55%, 100% { transform: rotate(-90deg); } }
 #game { position: absolute; display: block; background: #000; }
 #ui { position: absolute; pointer-events: none; overflow: hidden; }
 #ui > * { pointer-events: auto; }
@@ -52,6 +64,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tag.orig { background: var(--seal); color: #fff4e6; }
 .tag.note { background: var(--ink-soft); color: var(--hanji); }
 .tag.game { background: var(--game); color: var(--game-deep); }
+/* 이모지 대신 쓰는 작은 인장(한 글자) */
+.mk { display: inline-grid; place-items: center; min-width: 1.3em; height: 1.3em; padding: 0 .12em; margin-right: .38em; border-radius: .18em; font-family: var(--serif); font-weight: 900; font-size: .92em; line-height: 1; background: var(--game-deep); color: var(--game); vertical-align: -.12em; }
+.mk.red { background: var(--seal); color: #fff1e0; }
+.mk.tealmk { background: var(--game); color: var(--game-deep); }
+.seal-s { display: inline-grid; place-items: center; height: 1.35em; padding: 0 .25em; margin-right: .4em; border-radius: .15em; background: var(--seal); color: #fff1e0; font-family: var(--serif); font-weight: 900; font-size: .85em; vertical-align: .08em; letter-spacing: .02em; }
 .seal {
   display: inline-grid; place-items: center; background: var(--seal); color: #fff1e0;
   font-family: var(--serif); font-weight: 700; border-radius: calc(var(--u)*2);

@@ -36,6 +36,8 @@
     const pap = A.ui('paper');
     ctx.imageSmoothingEnabled = true;
     if (pap) ctx.drawImage(pap, 0, 0, G.W, G.H); else { ctx.fillStyle = '#e9dcbd'; ctx.fillRect(0, 0, G.W, G.H); }
+    ctx.save();
+    ctx.translate(Math.max(0, G.W - 640), 0);
     // 바다
     const pts = COAST.map((c) => proj(...c));
     ctx.save();
@@ -107,6 +109,7 @@
       const im = A.ui('map_rider');
       if (im) { const s = 0.32; ctx.drawImage(im, p.x - im.width * s / 2, p.y - im.height * s - 4 + Math.sin(t * 4) * 1.5, im.width * s, im.height * s); }
     }
+    ctx.restore();
   };
   function lab(ctx, s, x, y, size, color, align = 'center') {
     ctx.font = `700 ${size}px "Gowun Batang", serif`; ctx.textAlign = align;
@@ -128,11 +131,11 @@
         <div style="margin-bottom:calc(var(--u)*6)">
           <div style="font-family:var(--serif);font-weight:700;font-size:calc(var(--u)*10.5)">${esc(c.name)} <span style="font-weight:400;font-size:calc(var(--u)*8.5);color:#6b5a40">${esc(c.title)}</span></div>
           <div style="display:flex;flex-wrap:wrap;gap:calc(var(--u)*4);margin-top:calc(var(--u)*3)">
-            ${c.levels.map((lv) => `<button class="btn ${d.cleared[lv] ? 'ghost' : ''}" data-lv="${lv}" ${SC.isUnlocked(lv) ? '' : 'disabled style="opacity:.4"'}>${d.cleared[lv] ? '✓ ' : SC.isUnlocked(lv) ? '' : '🔒 '}${esc(lvName(lv))}</button>`).join('')}
+            ${c.levels.map((lv) => `<button class="btn ${d.cleared[lv] ? 'ghost' : ''}" data-lv="${lv}" ${SC.isUnlocked(lv) ? '' : 'disabled style="opacity:.4"'}>${d.cleared[lv] ? '✓ ' : ''}${esc(lvName(lv))}${!d.cleared[lv] && !SC.isUnlocked(lv) ? ' · 잠김' : ''}</button>`).join('')}
           </div></div>`).join('');
       const el = G.ui.add(`
         <div class="panel hanji" style="position:absolute;left:calc(var(--u)*12);top:calc(var(--u)*12);width:calc(var(--u)*318);height:calc(var(--u)*336);padding:calc(var(--u)*12) calc(var(--u)*14);display:flex;flex-direction:column">
-          <div style="font-family:var(--serif);font-weight:900;font-size:calc(var(--u)*15);margin-bottom:calc(var(--u)*6)">🗺️ 관동 팔백 리 여정</div>
+          <div style="font-family:var(--serif);font-weight:900;font-size:calc(var(--u)*15);margin-bottom:calc(var(--u)*6)"><b class="seal-s">路</b>관동 팔백 리 여정</div>
           <div class="scrollbox" style="flex:1">${chs}</div>
           <div style="display:flex;gap:calc(var(--u)*5);align-items:center;margin-top:calc(var(--u)*6)">
             <button class="btn red" data-a="go" style="flex:1">▶ 출발: <span class="gname"></span></button>
@@ -148,7 +151,7 @@
         const b = e.target.closest('[data-lv],[data-a]'); if (!b) return;
         if (b.dataset.lv) { this.sel = b.dataset.lv; G.audio.sfx('select'); refresh(); return; }
         const a = b.dataset.a;
-        if (a === 'go') { G.audio.sfx('confirm'); await SC.fade(0.4); SC.startLevel(this.sel); }
+        if (a === 'go') { G.screen.auto(); G.audio.sfx('confirm'); await SC.fade(0.4); SC.startLevel(this.sel); }
         if (a === 'book') await G.ui.book();
         if (a === 'title') SC.go(new G.TitleScene());
       });

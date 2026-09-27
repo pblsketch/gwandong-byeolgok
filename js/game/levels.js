@@ -36,7 +36,7 @@
     const f = GD().fiction[key];
     if (!f) return;
     const seen = G.save.data.seen;
-    if (seen[key]) { G.ui.toast('🎮 게임 설정: ' + (f.name || f.title), 'game'); return; }
+    if (seen[key]) { G.ui.toast('게임 설정 · ' + (f.name || f.title), 'game'); return; }
     seen[key] = true; G.save.write();
     await G.ui.fiction(f);
   };
@@ -417,7 +417,7 @@
       w.sign(3, 4, '의상대');
       w.setStart(2, 4);
       const sun = w.sun = {
-        x: 360, y: w.wy(4) - 58, y0: w.wy(4) - 58, y1: w.wy(4) - 215, t: 0, dim: 0,
+        get x() { return G.W / 2 + 40; }, y: w.wy(4) - 58, y0: w.wy(4) - 58, y1: w.wy(4) - 215, t: 0, dim: 0,
         drawSky(ctx, ww) {
           const sx = this.x - ww.cam.x * 0.05, sy = this.y - ww.cam.y;
           ctx.save();

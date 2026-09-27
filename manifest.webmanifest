@@ -1,0 +1,17 @@
+{
+  "name": "관동별곡: 잃어버린 시구",
+  "short_name": "관동별곡",
+  "description": "정철의 「관동별곡」을 여정·견문·감상의 흐름대로 걷는 학습 게임",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0d0c0a",
+  "theme_color": "#0d0c0a",
+  "lang": "ko",
+  "icons": [
+    { "src": "assets/ui/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/ui/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/ui/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

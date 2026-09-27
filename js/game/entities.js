@@ -295,7 +295,7 @@
     }
     draw(ctx) {
       A.frame(ctx, 'npcs', this.state === 'fly' ? 'gull' : 'gullstand', this.t, this.x, this.y + (this.state === 'fly' ? 0 : 6), this.state === 'fly' ? this.vx > 0 : false, { scale: 0.6 });
-      if (this.friend && this.state === 'stand') { ctx.fillStyle = '#e8566e'; ctx.font = '10px sans-serif'; ctx.fillText('♥', this.x - 3, this.y - 32); }
+      if (this.friend && this.state === 'stand') A.drawProp(ctx, 'heart', this.x, this.y - 34 + Math.sin(this.t * 4) * 1.5, { center: true, scale: 0.6 });
     }
   };
 

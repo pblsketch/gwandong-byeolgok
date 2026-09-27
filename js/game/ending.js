@@ -56,7 +56,7 @@
     while (true) {
       const i = await G.ui.choice('신선의 술을 마시니 겨드랑이에 날개가 돋는 듯해요. 화자라면 이제 어떻게 할까요?',
         ['이 술을 온 세상 사람들과 나눈 뒤에 다시 만나자고 한다', '신선을 따라 학을 타고 하늘나라로 떠난다'],
-        { tag: '<span class="tag game">🎮 선택</span><span class="tag note">결사의 갈림목</span>' });
+        { tag: '<span class="tag game">선택</span><span class="tag note">결사의 갈림목</span>' });
       if (i === 1) {
         // 만약에 엔딩(虛)
         G.save.data.sawWhatif = true; G.save.write();
@@ -249,12 +249,12 @@
         <div class="panel hanji result">
           <div style="display:flex;flex-direction:column;gap:calc(var(--u)*1.5);min-height:0;overflow-y:auto">
             <h2>여정을 마쳤어요</h2>
-            <div class="stat"><span>📜 되찾은 두루마리</span><b>${gotS} / ${scrolls.length}</b></div>
-            <div class="stat"><span>✍️ 문제 첫 시도 정답</span><b>${first} / ${qs.length} (${Math.round(qRatio * 100)}%)</b></div>
-            <div class="stat"><span>🧑‍🏫 고사·인물 카드</span><b>${gotP} / ${people.length}</b></div>
-            <div class="stat"><span>⚖️ 實/虛 분류</span><b>${sortSum[0]} / ${sortSum[1]}</b></div>
-            <div class="stat"><span>🍶 밝힌 마을 · 먹 조각</span><b>${d.flightLit || 0}곳 · ${d.ink}개</b></div>
-            <div class="stat"><span>⏱ 플레이 시간</span><b>${mins}분</b></div>
+            <div class="stat"><span><b class="mk red">卷</b>되찾은 두루마리</span><b>${gotS} / ${scrolls.length}</b></div>
+            <div class="stat"><span><b class="mk red">問</b>문제 첫 시도 정답</span><b>${first} / ${qs.length} (${Math.round(qRatio * 100)}%)</b></div>
+            <div class="stat"><span><b class="mk red">人</b>고사·인물 카드</span><b>${gotP} / ${people.length}</b></div>
+            <div class="stat"><span><b class="mk red">眞</b>實/虛 분류</span><b>${sortSum[0]} / ${sortSum[1]}</b></div>
+            <div class="stat"><span><b class="mk red">燈</b>밝힌 마을 · 먹 조각</span><b>${d.flightLit || 0}곳 · ${d.ink}개</b></div>
+            <div class="stat"><span><b class="mk red">時</b>플레이 시간</span><b>${mins}분</b></div>
             <div style="font-family:var(--serif);font-weight:700;font-size:calc(var(--u)*10);margin-top:calc(var(--u)*4)">화자의 마음 여정</div>
             <div class="graph"></div>
             <div style="display:flex;gap:calc(var(--u)*5);flex-wrap:wrap;margin-top:auto">
@@ -275,6 +275,7 @@
             <div style="font-family:var(--serif);font-weight:900;font-size:calc(var(--u)*17);color:var(--seal-dark)">${esc(grade.name)}</div>
             <div style="font-size:calc(var(--u)*9);margin-top:calc(var(--u)*4);line-height:1.5">${esc(grade.desc)}</div>
             <div style="font-size:calc(var(--u)*8.5);margin-top:calc(var(--u)*10);color:#6b5a40">${today.getFullYear()}. ${today.getMonth() + 1}. ${today.getDate()}. · 두루마리 ${gotS}/${scrolls.length} · 정답률 ${Math.round(qRatio * 100)}%${d.sawWhatif ? ' · 만약에 엔딩도 봄' : ''}</div>
+            <div style="font-size:calc(var(--u)*7.5);margin-top:calc(var(--u)*6);color:#8a7552">「관동별곡: 잃어버린 시구」 만든이 박준일 (온양여자고등학교 국어 교사)</div>
           </div>
         </div>`, 'overlay');
       el.querySelector('.graph').innerHTML = EN.mindGraph();
@@ -324,7 +325,7 @@
   EN.wrongNote = function (list) {
     return new Promise((resolve) => {
       const items = list.length ? list.map((q) => `<div class="entry"><h4><span class="tag orig">${esc(q.type || '문제')}</span>${esc(G.ui.yet(q.q))}</h4>
-        <div>정답: <b class="yet">${esc(G.ui.yet(q.choices[q.answer]))}</b></div><div class="mut">${esc(G.ui.yet(q.explain || ''))}</div></div>`).join('') : '<div class="entry">틀린 문제가 없어요! 🎉</div>';
+        <div>정답: <b class="yet">${esc(G.ui.yet(q.choices[q.answer]))}</b></div><div class="mut">${esc(G.ui.yet(q.explain || ''))}</div></div>`).join('') : '<div class="entry">틀린 문제가 없어요.</div>';
       const el = G.ui.add(`<div class="panel hanji book"><div class="tabs"><button class="on">오답 노트</button><button class="x btn" data-x="1">닫기 ✕</button></div><div class="content">${items}</div></div>`, 'overlay');
       const done = () => { close(); resolve(); };
       el.querySelector('[data-x]').addEventListener('click', done);

@@ -48,7 +48,7 @@
       ctx.fillStyle = 'rgba(6,36,40,.85)'; ctx.fillRect(x - 6, y - 16, 232, 30);
       ctx.strokeStyle = '#22c3b5'; ctx.lineWidth = 1; ctx.strokeRect(x - 6.5, y - 16.5, 233, 31);
       ctx.font = '700 9px "Noto Sans KR", sans-serif'; ctx.fillStyle = '#bff7f0'; ctx.textAlign = 'left';
-      ctx.fillText('🎮 虛 · ' + this.name, x, y - 5);
+      ctx.fillText('虛 · 게임 설정 · ' + this.name, x, y - 5);
       for (let i = 0; i < this.maxHp; i++) {
         ctx.fillStyle = i < this.hp ? '#e25a4a' : 'rgba(255,255,255,.15)';
         ctx.fillRect(x + i * 74, y + 1, 70, 6);

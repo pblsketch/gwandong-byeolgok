@@ -1,7 +1,7 @@
 'use strict';
 // 화면 위에 겹치는 HTML UI.
 // 표시 규칙(실제와 상상의 구분):
-//   orig = 📜 원문(한지 + 붉은 낙관)  note = 📖 풀이·해설(한지)  game = 🎮 게임 설정(청록)
+//   orig = 원문(한지 + 붉은 낙관)  note = 풀이·해설(한지)  game = 게임 설정(청록 + 虛 인장)
 (function () {
   const U = G.util, esc = U.esc;
   const ui = G.ui = { blocking: 0 };
@@ -20,7 +20,7 @@
   const TAG = {
     orig: '<span class="tag orig">原文 원문</span>',
     note: '<span class="tag note">풀이·해설</span>',
-    game: '<span class="tag game">🎮 게임 설정</span>',
+    game: '<span class="tag game"><b class="mk">虛</b>게임 설정</span>',
   };
   ui.TAG = TAG;
 
@@ -152,9 +152,9 @@
     return new Promise((resolve) => {
       const el = add(`
         <div class="fiction">
-          <div class="top"><span class="tag game">🎮 게임 설정 · 虛</span><span class="big">${esc(f.title || '잠깐! 이건 게임 설정이에요')}</span></div>
+          <div class="top"><span class="tag game"><b class="mk">虛</b>게임 설정</span><span class="big">${esc(f.title || '잠깐! 이건 게임 설정이에요')}</span></div>
           <div class="body">${esc(f.body)}</div>
-          ${f.real ? `<div class="real hanji"><span class="lab">📜 원문에서는 →</span>${esc(f.real)}</div>` : ''}
+          ${f.real ? `<div class="real hanji"><span class="lab"><b class="mk red">實</b>원문에서는</span>${esc(f.real)}</div>` : ''}
           <div class="foot"><button class="btn game">알겠어요 ▶</button></div>
         </div>`, 'overlay');
       G.audio.sfx('whoosh');
@@ -219,7 +219,7 @@
   ui.choice = function (title, options, opt = {}) {
     return new Promise((resolve) => {
       const btn = options.map((o, i) => `<button class="choice" data-i="${i}"><span class="n">${i + 1}</span><span>${esc(o)}</span></button>`).join('');
-      const el = add(`<div class="quiz hanji"><div class="kind">${opt.tag || '<span class="tag game">🎮 선택</span>'}</div><div class="q">${esc(title)}</div><div class="choices">${btn}</div></div>`, 'overlay');
+      const el = add(`<div class="quiz hanji"><div class="kind">${opt.tag || '<span class="tag game">선택</span>'}</div><div class="q">${esc(title)}</div><div class="choices">${btn}</div></div>`, 'overlay');
       const btns = Array.from(el.querySelectorAll('.choice'));
       const nav = focusNav(btns, 0);
       const pick = (i) => { close(); G.audio.sfx('confirm'); resolve(i); };
@@ -242,9 +242,11 @@
     G.audio.sfx('bell');
     setTimeout(() => el.remove(), 3700);
   };
-  ui.toast = function (text, type) {
+  ui.toast = function (text, type, sec = 2.2) {
     const el = add(esc(text), 'toast' + (type ? ' ' + type : ''));
-    setTimeout(() => el.remove(), 2300);
+    el.style.animationDuration = sec + 's';
+    if (sec > 3) el.style.whiteSpace = 'normal';
+    setTimeout(() => el.remove(), sec * 1000 + 100);
   };
 
   // ---------------------------------------------------------------- 일시정지·설정
@@ -260,6 +262,7 @@
           ${opts.inLevel ? '<button class="btn ghost" data-a="restart">체크포인트에서 다시</button>' : ''}
           ${opts.inLevel ? '<button class="btn ghost" data-a="map">월드맵으로</button>' : ''}
           <button class="btn ghost" data-a="title">타이틀로</button>
+          <button class="btn ghost" data-full="1">전체 화면 켜기·끄기</button>
           <div class="row">난이도 ${seg('difficulty', [['easy', '쉬움(무적)'], ['normal', '보통']])}</div>
           <div class="row">한자 병기 ${seg('hanja', [[true, '켜기'], [false, '끄기']])}</div>
           <div class="row">현대어 풀이 ${seg('modern', [[true, '보이기'], [false, '숨기기']])}</div>
@@ -268,6 +271,7 @@
         </div>`, 'overlay');
       const done = (a) => { close(); resolve(a); };
       el.addEventListener('click', (e) => {
+        if (e.target.dataset.full) { G.screen.toggle(); return; }
         const a = e.target.dataset.a;
         if (a) { G.audio.sfx('confirm'); done(a); return; }
         const segEl = e.target.closest('.seg');
@@ -300,7 +304,7 @@
       const el = add(`
         <div class="panel hanji book">
           <div class="tabs">
-            <button data-t="scrolls">📜 원문 두루마리</button><button data-t="people">고사·인물</button>
+            <button data-t="scrolls">원문 두루마리</button><button data-t="people">고사·인물</button>
             <button data-t="symbols">시어·상징</button><button data-t="fiction">실제와 상상</button><button data-t="info">작품 정보</button>
             <button class="x btn" data-t="close">닫기 ✕</button>
           </div>
@@ -327,15 +331,16 @@
             h += `<div class="entry"><h4><span class="tag orig">實</span><span class="yet">${esc(ui.yet(y.word))}</span></h4><div class="yet">${esc(G.yet(y.meaning || ''))}</div>${y.note ? `<div class="mut yet">${esc(G.yet(y.note))}</div>` : ''}</div>`;
           }
         } else if (t === 'fiction') {
-          h += `<div class="mut">게임을 재미있게 만들려고 지어낸 것들이에요. 청록색 상자와 🎮 표시는 모두 '상상'이에요.</div>`;
+          h += `<div class="mut">게임을 재미있게 만들려고 지어낸 것들이에요. 청록색 상자와 虛 인장은 모두 '상상'이에요.</div>`;
           for (const k in window.GD.fiction) {
             const f = window.GD.fiction[k];
-            h += `<div class="entry"><h4><span class="tag game">虛</span>${esc(f.name || f.title)}</h4><div>${esc(f.body)}</div>${f.real ? `<div class="mut">📜 원문에서는 → ${esc(f.real)}</div>` : ''}</div>`;
+            h += `<div class="entry"><h4><span class="tag game">虛</span>${esc(f.name || f.title)}</h4><div>${esc(f.body)}</div>${f.real ? `<div class="mut"><b class="mk red">實</b>원문에서는 ${esc(f.real)}</div>` : ''}</div>`;
           }
         } else if (t === 'info') {
           const I = KB.info || {};
           const rows = [['작가', I.author], ['창작 시기', I.year], ['갈래', I.genre], ['형식', I.form], ['수록', I.collection], ['창작 배경', I.background], ['구성', I.structure], ['평가', I.evaluation]];
           for (const [k, v] of rows) if (v) h += `<div class="entry"><h4>${esc(k)}</h4><div class="yet">${esc(G.yet(v))}</div></div>`;
+          h += `<div class="entry"><h4>만든 사람</h4><div>박준일 (온양여자고등학교 국어 교사)</div><div class="mut">그림은 Codex CLI(gpt-image-2)로 생성, 배경음악은 웹 오디오로 합성한 창작 국악이에요.</div></div>`;
           h += `<div class="entry"><h4>표시 규칙</h4><div>${TAG.orig} 원문 그대로 · ${TAG.note} 현대어 풀이와 해설 · ${TAG.game} 게임을 위해 지어낸 상상</div></div>`;
         }
         content.innerHTML = h;
@@ -364,7 +369,7 @@
       const shuffled = U.shuffle(places.map((p, i) => ({ p, i })));
       const el = add(`
         <div class="panel hanji mini">
-          <h3>🗺️ ${esc(title)}</h3>
+          <h3><b class="seal-s">路</b>${esc(title)}</h3>
           <div class="desc">화자가 지나간 순서대로 장소를 눌러 여정을 이어 보세요.</div>
           <div class="route"><span class="slot">${esc(places[0])}</span></div>
           <div class="cards">${shuffled.filter((x) => x.i > 0).map((x) => `<button data-i="${x.i}">${esc(x.p)}</button>`).join('')}</div>
@@ -398,7 +403,7 @@
       let k = 0, score = 0;
       const el = add(`
         <div class="panel hanji mini">
-          <h3>⚖️ 진짜 관동별곡일까, 게임 속 상상일까?</h3>
+          <h3><b class="seal-s">實虛</b>진짜 관동별곡일까, 게임 속 상상일까?</h3>
           <div class="desc">이번 장에서 본 장면이에요. 원문에 있는 내용이면 <b>實</b>, 게임을 위해 지어낸 내용이면 <b>虛</b>를 고르세요.</div>
           <div class="sortcard"></div>
           <div class="sortbtns"><button class="real">實 · 원문 속 사실</button><button class="fake">虛 · 게임 속 상상</button></div>
