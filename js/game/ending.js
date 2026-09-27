@@ -12,7 +12,7 @@
     await G.ui.scroll(s);
     const q = (KB().quizzes || []).filter((x) => x.scroll === s.id);
     const qq = q.find((x) => x.type === 'mind') || q[0];
-    if (qq) { const ok = await G.ui.quiz(qq, { sub: s.place }); if (qq.type === 'mind' && ok) { G.save.data.mind[s.id] = true; G.save.write(); } }
+    if (qq) { const ok = await G.ui.quiz(qq, { sub: s.place, review: s }); if (qq.type === 'mind' && ok) { G.save.data.mind[s.id] = true; G.save.write(); } }
   }
 
   EN.build = function (w) {

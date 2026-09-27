@@ -318,14 +318,21 @@
   E.Tablets = class { // 음보 석판: 4음보를 순서대로 치면 다리가 놓인다
     constructor(x, y, parts, onSolve) {
       this.parts = parts; this.onSolve = onSolve; this.next = 0; this.z = 4; this.x = x; this.y = y; this.w = 1;
-      this.order = U.shuffle(parts.map((p, i) => i));
-      this.slabs = this.order.map((pi, k) => ({ pi, x: x + k * 44, y: y - 40 - (k % 2) * 26, w: 38, h: 34, lit: false, shake: 0 }));
+      do { this.order = U.shuffle(parts.map((p, i) => i)); } while (this.order.every((v, i) => v === i));   // 이미 순서대로 놓이면 퍼즐이 안 된다
+      // 석판은 모두 땅에 세운다(그림 밑동 = y + 4)
+      this.slabs = this.order.map((pi, k) => ({ pi, x: x + k * 54, y: y - 34, w: 38, h: 34, lit: false, shake: 0 }));
       this.solved = false;
     }
     init(w) {
       for (const s of this.slabs) {
         const slab = { x: s.x, y: s.y, w: s.w, h: s.h, hittable: true, z: 4, ref: s, owner: this };
-        slab.hurt = (n, dir, ww) => this.hit(s, ww);
+        // 붓 한 번에 석판 여럿이 닿으면, 붓 끝에 가장 가까운 석판 하나만 친다
+        slab.hurt = (n, dir, ww) => {
+          const p = ww.player, tip = p.cx + p.facing * 24;
+          const box = p.attackBox();
+          const near = this.slabs.filter((t) => U.overlap(box, t)).sort((a, b) => Math.abs(a.x + 19 - tip) - Math.abs(b.x + 19 - tip))[0];
+          if (!near || near === s) this.hit(s, ww);
+        };
         slab.update = () => {};
         slab.draw = () => {};
         w.add(slab);

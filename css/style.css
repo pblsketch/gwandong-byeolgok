@@ -158,6 +158,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* ---------- 퀴즈 ---------- */
 .quiz { width: calc(var(--u)*520); border-radius: calc(var(--u)*6); padding: calc(var(--u)*14) calc(var(--u)*18) calc(var(--u)*14); box-shadow: 0 calc(var(--u)*6) calc(var(--u)*24) rgba(0,0,0,.5); animation: pop .25s ease-out; position: relative; }
 .quiz .kind { display: flex; align-items: center; gap: calc(var(--u)*6); margin-bottom: calc(var(--u)*6); }
+.quiz .kind .rv { margin-left: auto; padding: calc(var(--u)*3) calc(var(--u)*8); font-size: calc(var(--u)*8.5); margin-right: calc(var(--u)*50); }
+.quiz .kind .rv[disabled] { opacity: .45; cursor: default; }
 .quiz .q { font-family: var(--serif); font-weight: 700; font-size: calc(var(--u)*12.5); line-height: 1.6; margin-bottom: calc(var(--u)*10); white-space: pre-line; }
 .quiz .q .yet { font-family: var(--yet); }
 .quiz .choices { display: grid; gap: calc(var(--u)*6); }

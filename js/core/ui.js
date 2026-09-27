@@ -122,7 +122,7 @@
           <div class="foot">
             <button class="btn ghost" data-k="modern">${st.modern ? '풀이 숨기기' : '풀이 보기'}</button>
             <button class="btn ghost" data-k="hanja">${st.hanja ? '한자 숨기기' : '한자 보기'}</button>
-            <button class="btn red" data-k="ok">계속 ▶</button>
+            <button class="btn red" data-k="ok">${esc(opt.okLabel || '계속 ▶')}</button>
           </div></div>`, 'overlay');
       G.audio.sfx('scroll');
       const card = el.querySelector('.scroll');
@@ -170,9 +170,12 @@
     return new Promise((resolve) => {
       const kind = opt.kind || KIND[q.type] || '문제';
       const choices = q.choices.map((c, i) => `<button class="choice" data-i="${i}"><span class="n">${i + 1}</span><span>${esc(ui.yet(c))}</span></button>`).join('');
+      // opt.review: 이 문제의 두루마리. 급하게 넘긴 학생을 위해 문제마다 한 번 원문을 다시 볼 수 있다.
+      const rv = !!opt.review;
       const el = add(`
         <div class="quiz hanji">
-          <div class="kind"><span class="tag orig">${esc(kind)}</span>${opt.sub ? `<span class="tag note">${esc(opt.sub)}</span>` : ''}</div>
+          <div class="kind"><span class="tag orig">${esc(kind)}</span>${opt.sub ? `<span class="tag note">${esc(opt.sub)}</span>` : ''}
+            ${rv ? `<button class="btn ghost rv">원문 다시 보기${G.input.isTouch ? '' : ' (Esc)'} · 한 번</button>` : ''}</div>
           <div class="q">${esc(ui.yet(q.q))}</div>
           <div class="choices">${choices}</div>
           <div class="after"></div>
@@ -185,6 +188,7 @@
         if (answered) return;
         answered = true;
         ok = i === q.answer;
+        const rvb = el.querySelector('.rv'); if (rvb) rvb.remove();   // 답한 뒤에는 다시 보기가 필요 없다(도장 자리)
         btns.forEach((b) => (b.disabled = true));
         btns[q.answer].classList.add('right');
         if (!ok) btns[i].classList.add('wrong');
@@ -202,7 +206,18 @@
       };
       const finish = () => { close(); resolve(ok); };
       btns.forEach((b) => b.addEventListener('click', () => pick(+b.dataset.i)));
+      let reviewed = false;
+      const review = async () => {
+        if (!rv || reviewed || answered) return;
+        reviewed = true;
+        const b = el.querySelector('.rv'); b.disabled = true; b.textContent = '다시 보기를 썼어요';
+        el.style.visibility = 'hidden';
+        await ui.scroll(opt.review, { review: true, okLabel: '문제로 돌아가기 ▶' });
+        el.style.visibility = '';
+      };
+      if (rv) el.querySelector('.rv').addEventListener('click', review);
       const close = modal(el, (a) => {
+        if (a === 'pause') { review(); return true; }
         if (!answered) {
           const m = { n1: 0, n2: 1, n3: 2, n4: 3, n5: 4 };
           if (a in m && m[a] < btns.length) pick(m[a]);

@@ -28,6 +28,18 @@
     const rest = this.scrollsAt().filter((s) => !(this.placed && this.placed.has(s.id)));
     rest.forEach((s, i) => this.add(new E.Scroll(this.wx(x - rest.length * 2 + i * 2) + 16, this.wy(h), s.id)));
   };
+  // 타일 x 기둥의 맨 위 땅 높이(없으면 null)
+  W.groundH = function (tx) {
+    for (let r = 0; r < this.h; r++) { const t = this.tileAt(tx, r); if (t === G.TILE.SOLID) return this.h - r; if (t === G.TILE.HAZARD) return null; }
+    return null;
+  };
+  // 땅 위에만 장식을 심는다: 밑동이 걸치는 칸들의 땅 높이가 모두 같을 때만(구덩이·물 위, 바위 턱에 걸치면 건너뛴다)
+  W.decoGround = function (name, x, opt = {}, halfW = 0.6) {
+    const hs = [];
+    for (let tx = Math.floor(x - halfW); tx <= Math.floor(x + halfW - 0.01); tx++) hs.push(this.groundH(tx));
+    if (hs[0] === null || hs.some((h) => h !== hs[0])) return this;
+    return this.deco(name, x, hs[0], opt);
+  };
   W.onScroll = function (key, fn) { (this.scrollHooks = this.scrollHooks || []).push({ key, fn }); };
   W.say = function (who, text, type, mood) { return G.ui.say({ who, text, type, mood }); };
   W.note = function (text) { return G.ui.say({ who: 'note', text, type: 'note' }); };
@@ -72,7 +84,7 @@
     const qs = (KB().quizzes || []).filter((q) => q.scroll === id);
     const q = qs.find((x) => x.type === 'mind') || qs[0];
     if (q) {
-      const ok = await G.ui.quiz(q, { sub: s.place });
+      const ok = await G.ui.quiz(q, { sub: s.place, review: s });
       if (q.type === 'mind' && ok) { d.mind[id] = true; G.save.write(); }
     }
     for (const h of this.scrollHooks || []) if ((s.place || '').includes(h.key)) await h.fn(this, s);
@@ -92,7 +104,7 @@
       w.clear(36, 39, 0, 3).hazard(36, 39, 2); w.plat(37, 5, 1);
       w.block(44, 4, 5, 1);
       w.clear(52, 54, 0, 3).hazard(52, 54, 2);
-      for (let x = 2; x < 60; x += 5 + (x % 3)) w.deco('bamboo', x + 0.5, 3, { scale: 0.9 + (x % 4) * 0.08 });
+      for (let x = 2; x < 60; x += 5 + (x % 3)) w.decoGround('bamboo', x + 0.5, { scale: 0.9 + (x % 4) * 0.08 });
       w.deco('boulder', 25, 3); w.deco('pine', 58, 3);
       w.bgAt(64, 'bg_palace');
       w.deco('gate', 76, 3);
@@ -152,7 +164,7 @@
     build(w) {
       w.ground(0, 12, 3);
       w.hazard(12, 40, 2);
-      for (const [x, h] of [[14, 3], [18, 4], [22, 3], [26, 4], [30, 5], [34, 4], [37, 3]]) w.block(x, h, 2, h);
+      for (const [x, h] of [[14, 3], [18, 4], [22, 3], [26, 4], [30, 5], [34, 4], [37, 3]]) w.block(x, h, 2, h, 'granite');   // 강물 위 징검돌
       w.ground(40, 166, 3);
       w.sign(4, 3, '소양강');
       w.putScrolls('소양', [[8, 3]]);
@@ -175,6 +187,7 @@
         await ww.fictionOnce('crows');
         ww.lockInput = false;
       });
+      w.bgAt(124, 'bg_road');   // 궁예의 옛 대궐 터를 지나면 다시 길 풍경
       w.sign(128, 3, '회양');
       w.putScrolls('회양', [[138, 3]]);
       w.ink(44, 4, 4); w.ink(120, 4, 5);
@@ -193,7 +206,7 @@
       w.hazard(26, 44, 1);
       w.block(26, 2, 1, 2);
       // 폭포 물줄기(아래로 떠밀린다)
-      w.add(new E.Current(w.wx(21), 0, 60, w.h * TS));
+      w.add(new E.Current(w.wx(21), 0, 60, w.wy(2)));   // 땅(높이 2)에서 끝나게: 땅을 뚫고 흐르지 않도록
       w.add(new E.Current(w.wx(29), 0, 90, w.h * TS));
       // 지그재그 발판: 학의 깃(2단 점프)은 꼭대기 금강대에서 얻으므로 한 번 점프(최대 약 2.6칸)로 오르도록
       // 층마다 2칸씩 높이고, 옆 발판과는 붙이거나 1칸만 띄운다. 금강대 바위(x 0~13, 높이 40~42) 밑은 피한다.
@@ -298,7 +311,8 @@
       w.ground(0, 62, 3);
       w.sign(3, 3, '화룡소');
       const dragon = w.add(new E.Sprite('dragon', 'rest', w.wx(15), w.wy(3) + 34, { z: 1, scale: 0.8 }));
-      w.water.push({ x0: 10, x1: 21, h: 3.3, deco: true });
+      // 화룡소 못: 땅을 한 칸 낮춰 얕은 물을 채운다(용이 물에서 솟은 모습, 사람은 발목까지 잠겨 건넌다)
+      w.clear(10, 21, 2, 3); w.water.push({ x0: 10, x1: 21, h: 2.7, deco: true });
       w.add(new E.Altar(w.wx(7) + 16, w.wy(3), async (ww) => {
         ww.lockInput = true;
         dragon.anim = 'rain';
@@ -317,7 +331,8 @@
       }));
       // 그늘진 벼랑(음애)과 시든 풀
       w.block(24, 14, 8, 11);
-      w.vines = [[21, 5, 3], [21, 7, 3], [21, 9, 3], [21, 11, 3], [22, 13, 2]];   // 2칸 간격: 관리의 마음으로도 오른다
+      // 벼랑(x 24~) 틈에 붙어 자라는 풀: 벼랑에 맞닿은 두 칸, 2칸 간격(관리의 마음으로도 오른다)
+      w.vines = [[22, 5, 2], [22, 7, 2], [22, 9, 2], [22, 11, 2], [22, 13, 2]];
       w.deadGrass = [];
       for (const [x, h, n] of w.vines) for (let i = 0; i < n; i++) w.deadGrass.push(w.add(new E.Prop('grass_dead', w.wx(x + i) + 16, w.wy(h) + 6, { z: 2 })));
       w.trigger(9, 11, async (ww) => {
@@ -392,8 +407,7 @@
       w.savePoint(81, 3);
       w.trigger(80, 83, (ww) => { if (ww.player.mode !== 'immortal') G.ui.toast('돌기둥 사이가 멀어요 · 신선의 마음{mind}으로 바꿔 2단 점프!', 'game', 3.2); });
       const pil = [[86, 5], [91, 7], [96, 6], [101, 8], [106, 6], [111, 5], [116, 7], [121, 6], [126, 5]];
-      for (const [x, h] of pil) w.block(x, h, 2, h, 'granite');
-      for (const [x, h] of pil) w.deco('pillar', x + 1, h, { scale: 0.55, dy: 2 });
+      for (const [x, h] of pil) w.block(x, h, 2, h, 'granite');   // 바다에서 솟은 돌기둥(총석)
       w.ground(132, 204, 3, 'grass');
       w.block(132, 6, 8, 3, 'granite');
       w.deco('pavilion', 136, 6, { scale: 0.8 });
@@ -404,10 +418,11 @@
       // 삼일포
       w.sign(146, 3, '삼일포');
       w.deco('danseo', 166, 3);
-      w.water.push({ x0: 172, x1: 190, h: 3.4, deco: true });
+      // 삼일포 호숫가: 땅을 한 칸 낮춰 발목까지 잠기는 얕은 물(물은 그림만, 빠져도 괜찮다)
+      w.clear(172, 190, 2, 3); w.water.push({ x0: 172, x1: 190, h: 2.7, deco: true });
       w.putScrolls('삼일', [[164, 3]]);
       w.putScrolls('고성', [[160, 3]]);
-      w.blob(152, 3); w.blob(180, 3, { dir: 1 });
+      w.blob(152, 3); w.blob(180, 2, { dir: 1 });
       w.ink(90, 9, 1); w.ink(101, 10, 1); w.ink(116, 9, 1); w.ink(150, 4, 4);
       w.putLeftovers(194, 3);
       w.setStart(2, 3);
