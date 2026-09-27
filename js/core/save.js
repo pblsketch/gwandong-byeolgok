@@ -9,7 +9,7 @@
     quiz: {},             // 문제 id → { ok: 처음 맞혔는지, tries }
     mind: {},             // 마음 읽기로 찍은 점: 두루마리 id → true
     seen: {},             // 한 번 본 게임 설정 카드
-    settings: { difficulty: 'lives', hanja: true, modern: true, music: true },   // difficulty: lives(목숨 3개, 기본) | normal(무한 목숨) | easy(무적)
+    settings: { difficulty: 'lives', hanja: true, modern: true, music: true },   // difficulty: lives(목숨 3개, 기본) | normal(무한 목숨)
     ink: 0,               // 먹 조각(점수)
     playTime: 0,
     ending: null,         // 'true' | 'whatif'
@@ -23,6 +23,7 @@
       if (raw) {
         const d = JSON.parse(raw), b = blank();
         S.data = Object.assign(b, d, { settings: Object.assign(b.settings, d.settings || {}), unlock: Object.assign(b.unlock, d.unlock || {}) });
+        if (!['lives', 'normal'].includes(S.data.settings.difficulty)) S.data.settings.difficulty = 'normal';   // 없앤 '쉬움(무적)' → 무한 목숨
       }
     } catch (e) { /* 저장 불가 환경 */ }
     return S.data;

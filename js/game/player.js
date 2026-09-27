@@ -182,27 +182,31 @@
       }
     }
 
-    // 난이도: easy = 다치지 않음, normal = 무한 목숨(하트를 다 잃으면 이정표에서 하트를 채워 다시),
-    //         lives = 목숨 3개(하트가 곧 목숨, 다 잃으면 그 구간을 처음부터)
+    // 하트 = 한 목숨의 체력. 하트를 다 잃으면 '쓰러진다'.
+    //   목숨 3개(lives, 기본): 쓰러질 때마다 목숨이 하나 줄고 가까운 이정표에서 이어 간다. 구간마다 목숨 3개, 다 잃으면 그 구간 첫머리로.
+    //   무한 목숨(normal): 쓰러져도 목숨이 줄지 않고 가까운 이정표에서 이어 간다.
     damage(n, dir, w) {
       if (this.invT > 0 || this.out) return;
-      const diff = G.save.data.settings.difficulty;
-      if (diff === 'easy') { this.invT = 0.6; this.vx = dir * 160; this.vy = -200; return; }
       this.hp -= n;
       this.hurtT = 0.35; this.invT = 1.3;
       this.vx = dir * 200; this.vy = -260;
       G.audio.sfx('hurt'); FX.flash('#ff5040', 0.16); FX.shake(5, 0.3); FX.stop(0.09);
       FX.burst(this.cx, this.cy, 'ink', 10, { max: 160 });
-      if (this.hp <= 0) { if (diff === 'lives') this.gameOver(w); else this.respawn(w, '먹물을 털고 다시 일어섰다'); }
+      if (this.hp <= 0) this.down(w);
     }
     fall(w) {
       if (this.falling || this.out) return;
       this.falling = true;
-      const diff = G.save.data.settings.difficulty;
-      if (diff !== 'easy') this.hp -= 1;
+      this.hp -= 1;
       G.audio.sfx('hurt'); FX.flash('#203040', 0.2);
-      if (this.hp <= 0 && diff === 'lives') { this.gameOver(w); return; }
-      this.respawn(w, this.hp <= 0 ? '먹물을 털고 다시 일어섰다' : null);
+      if (this.hp <= 0) this.down(w); else this.respawn(w, null);
+    }
+    down(w) {   // 쓰러짐
+      if (G.save.data.settings.difficulty !== 'lives') { this.respawn(w, '먹물을 털고 다시 일어섰다'); return; }
+      w.lives = (w.lives === undefined ? 3 : w.lives) - 1;
+      if (w.lives <= 0) { w.lives = 0; this.gameOver(w); return; }
+      G.hud && G.hud.pulse();
+      this.respawn(w, `목숨 하나를 잃었어요 · 남은 목숨 ${w.lives}개`);
     }
     gameOver(w) {
       this.out = true; this.hp = 0; this.vx = 0;
