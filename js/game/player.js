@@ -182,22 +182,33 @@
       }
     }
 
+    // 난이도: easy = 다치지 않음, normal = 무한 목숨(하트를 다 잃으면 이정표에서 하트를 채워 다시),
+    //         lives = 목숨 3개(하트가 곧 목숨, 다 잃으면 그 구간을 처음부터)
     damage(n, dir, w) {
-      if (this.invT > 0) return;
-      if (G.save.data.settings.difficulty === 'easy') { this.invT = 0.6; this.vx = dir * 160; this.vy = -200; return; }
+      if (this.invT > 0 || this.out) return;
+      const diff = G.save.data.settings.difficulty;
+      if (diff === 'easy') { this.invT = 0.6; this.vx = dir * 160; this.vy = -200; return; }
       this.hp -= n;
       this.hurtT = 0.35; this.invT = 1.3;
       this.vx = dir * 200; this.vy = -260;
       G.audio.sfx('hurt'); FX.flash('#ff5040', 0.16); FX.shake(5, 0.3); FX.stop(0.09);
       FX.burst(this.cx, this.cy, 'ink', 10, { max: 160 });
-      if (this.hp <= 0) this.respawn(w, '먹물을 털고 다시 일어섰다');
+      if (this.hp <= 0) { if (diff === 'lives') this.gameOver(w); else this.respawn(w, '먹물을 털고 다시 일어섰다'); }
     }
     fall(w) {
-      if (this.falling) return;
+      if (this.falling || this.out) return;
       this.falling = true;
-      if (G.save.data.settings.difficulty !== 'easy') this.hp -= 1;
+      const diff = G.save.data.settings.difficulty;
+      if (diff !== 'easy') this.hp -= 1;
       G.audio.sfx('hurt'); FX.flash('#203040', 0.2);
+      if (this.hp <= 0 && diff === 'lives') { this.gameOver(w); return; }
       this.respawn(w, this.hp <= 0 ? '먹물을 털고 다시 일어섰다' : null);
+    }
+    gameOver(w) {
+      this.out = true; this.hp = 0; this.vx = 0;
+      w.lockInput = true;
+      const sc = G.scenes.cur;
+      if (sc && sc.world === w && sc.gameOver) sc.gameOver();
     }
     respawn(w, msg) {
       const c = w.checkpoint || w.start;

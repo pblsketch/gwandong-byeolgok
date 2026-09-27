@@ -257,17 +257,24 @@
       const el = add(`
         <div class="panel hanji pause">
           <h2>잠시 멈춤</h2>
-          <button class="btn" data-a="resume">계속하기</button>
-          <button class="btn ghost" data-a="book">관동 편람 (원문·인물·상징)</button>
-          ${opts.inLevel ? '<button class="btn ghost" data-a="restart">체크포인트에서 다시</button>' : ''}
-          ${opts.inLevel ? '<button class="btn ghost" data-a="map">월드맵으로</button>' : ''}
-          <button class="btn ghost" data-a="title">타이틀로</button>
-          <button class="btn ghost" data-full="1">전체 화면 켜기·끄기</button>
-          <div class="row">난이도 ${seg('difficulty', [['easy', '쉬움(무적)'], ['normal', '보통']])}</div>
-          <div class="row">한자 병기 ${seg('hanja', [[true, '켜기'], [false, '끄기']])}</div>
-          <div class="row">현대어 풀이 ${seg('modern', [[true, '보이기'], [false, '숨기기']])}</div>
-          <div class="row">음악 ${seg('music', [[true, '켜기'], [false, '끄기']])}</div>
-          <div class="row" style="opacity:.7">조작: ←→ 이동 · ↑/Space 점프 · A 붓 · S 옥절 · D 마음 전환 · Enter 대화 · Esc 멈춤</div>
+          <div class="pcols">
+            <div class="pcol">
+              <button class="btn" data-a="resume">계속하기</button>
+              <button class="btn ghost" data-a="book">관동 편람 (원문·인물·상징)</button>
+              ${opts.inLevel ? '<button class="btn ghost" data-a="restart">체크포인트에서 다시</button>' : ''}
+              ${opts.inLevel ? '<button class="btn ghost" data-a="map">월드맵으로</button>' : ''}
+              <button class="btn ghost" data-a="title">타이틀로</button>
+              <button class="btn ghost" data-full="1">전체 화면 켜기·끄기</button>
+            </div>
+            <div class="pcol">
+              <div class="row">목숨 ${seg('difficulty', [['lives', '3개'], ['normal', '무한'], ['easy', '쉬움(무적)']])}</div>
+              <div class="row">한자 병기 ${seg('hanja', [[true, '켜기'], [false, '끄기']])}</div>
+              <div class="row">현대어 풀이 ${seg('modern', [[true, '보이기'], [false, '숨기기']])}</div>
+              <div class="row">음악 ${seg('music', [[true, '켜기'], [false, '끄기']])}</div>
+              <div class="keys">3개: 모두 잃으면 이어 하기·구간 다시 중에서 골라요 · 무한: 쓰러져도 이정표에서 바로 다시</div>
+            </div>
+          </div>
+          <div class="keys">조작: ←→ 이동 · ↑/Space 점프 · A 붓 · S 옥절 · D 마음 전환 · Enter 대화 · Esc 멈춤</div>
         </div>`, 'overlay');
       const done = (a) => { close(); resolve(a); };
       el.addEventListener('click', (e) => {

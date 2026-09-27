@@ -72,6 +72,45 @@
     await SCR.enter();
     setTimeout(resize, 300);
   });
+  // ---------------------------------------------------------------- 사파리 확대 막기·되돌리기
+  // 사파리는 user-scalable=no를 무시해서, 버튼을 빠르게 연타하면 두 번 탭 확대, 두 손가락이면 핀치 확대가 된다.
+  // 게임은 화면 전체의 터치 제스처를 막아 두었으므로, 한번 확대되면 오므려도 돌아오지 않는다.
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const typing = e.target && e.target.closest && e.target.closest('input, textarea');
+    if (!typing && e.timeStamp - lastTouchEnd < 350 && e.cancelable) e.preventDefault();
+    lastTouchEnd = e.timeStamp;
+  }, { passive: false });
+  const noPinch = (e) => { if (!SCR.unzooming && e.cancelable) e.preventDefault(); };
+  document.addEventListener('gesturestart', noPinch, { passive: false });
+  document.addEventListener('gesturechange', noPinch, { passive: false });
+  const vpMeta = document.querySelector('meta[name=viewport]');
+  const VP = vpMeta ? vpMeta.getAttribute('content') : '';
+  SCR.checkZoom = function () {
+    const vv = window.visualViewport;
+    if (!vv || !vpMeta) return;
+    if (vv.scale > 1.05) {
+      if (SCR.unzooming) return;
+      SCR.unzooming = true;
+      // 뷰포트 설정을 다시 읽히면 배율 1로 돌아온다
+      vpMeta.setAttribute('content', VP + ',minimum-scale=1');
+      setTimeout(() => vpMeta.setAttribute('content', VP), 300);
+      // 그래도 확대돼 있으면 오므리기를 잠시 허용하고 알려 준다
+      setTimeout(() => {
+        if (vv.scale <= 1.05) return;
+        document.body.style.touchAction = 'pinch-zoom';
+        G.ui.toast('화면이 확대됐어요 · 두 손가락으로 오므리면 돌아와요', 'game', 5);
+      }, 800);
+    } else if (SCR.unzooming) {
+      SCR.unzooming = false;
+      document.body.style.touchAction = '';
+      resize();
+    }
+  };
+  if (window.visualViewport) {
+    visualViewport.addEventListener('resize', () => SCR.checkZoom());
+    visualViewport.addEventListener('scroll', () => SCR.checkZoom());
+  }
   document.addEventListener('fullscreenchange', () => setTimeout(resize, 100));
   document.addEventListener('webkitfullscreenchange', () => setTimeout(resize, 100));
 

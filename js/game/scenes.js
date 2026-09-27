@@ -49,7 +49,9 @@
       A.drawProp(ctx, 'heart', 16 + i * 17, 16, { center: true });
     }
     ctx.globalAlpha = 1;
-    if (G.save.data.settings.difficulty === 'easy') chip(ctx, 70, 16, '쉬움', '#5c8f5c');
+    const diff = G.save.data.settings.difficulty;
+    if (diff === 'easy') chip(ctx, 70, 16, '쉬움', '#5c8f5c');
+    else if (diff === 'lives') chip(ctx, 76, 16, '목숨 3개', '#9c2a20');
     // 마음
     const d = G.save.data;
     if (d.unlock.okjeol && !p.horse && w.id !== 'EF') {
@@ -132,6 +134,7 @@
       this.t += dt;
       G.save.data.playTime += dt;
       if (G.ui.blocking > 0) { FX.update(dt * 0.5); return; }
+      if (this.over) { FX.update(dt); return; }   // 목숨 3개 모드: 목숨을 다 잃으면 세계를 멈춘다
       if (G.screen.portrait) return;          // 세로로 들고 있으면 잠시 멈춤
       if (I.pressed('pause') && !this.pausing) { this.pause(); return; }
       if (FX.hitstop > 0) { FX.hitstop -= dt; FX.update(0); FX.shakeT > 0 && FX.update(0.0001); return; }
@@ -151,6 +154,28 @@
       else if (a === 'restart') { this.world.player.respawn(this.world); }
       else if (a === 'map') { SC.go(new G.MapScene()); }
       else if (a === 'title') { SC.go(new TitleScene()); }
+    }
+    async gameOver() {
+      if (this.over) return;
+      this.over = true;
+      G.audio.sfx('wrong'); FX.flash('#2a0c08', 0.35); FX.shake(4, 0.3);
+      await U.sleep(0.9);
+      const name = G.levels[this.id].name;
+      const i = await G.ui.choice('목숨을 모두 잃었어요. 어떻게 할까요?', [
+        '쓰러진 곳에서 이어 하기 · 가장 가까운 이정표에서 하트 3개로',
+        `이 구간을 처음부터 · ‘${name}’ 첫머리로`,
+        '월드맵으로',
+      ], { tag: '<span class="tag game">목숨 3개</span><span class="tag note">다시 도전</span>' });
+      if (i === 0) {
+        // 이어 하기: 지금 구간의 체크포인트에서 하트를 채워 다시 선다(모은 것·보스 체력은 그대로)
+        const w = this.world, p = w.player;
+        p.out = false; p.falling = false; p.hp = 0;
+        p.respawn(w, '하트를 채우고 다시 일어섰다');
+        w.lockInput = false; this.over = false;
+        return;
+      }
+      await SC.fade(0.5);
+      if (i === 1) SC.go(new LevelScene(this.id)); else SC.go(new G.MapScene(this.id));
     }
     async complete() {
       const d = G.save.data;
@@ -252,7 +277,14 @@
         G.screen.auto();
         if (a === 'new') {
           if (has) { const i = await G.ui.choice('저장된 여정을 지우고 처음부터 시작할까요?', ['네, 처음부터', '아니요'], { tag: '<span class="tag note">확인</span>' }); if (i !== 0) return; }
-          G.save.reset(); SC.startLevel('P1');
+          const mode = await G.ui.choice('어떤 방식으로 떠날까요? (멈춤 메뉴에서 언제든 바꿀 수 있어요)', [
+            '목숨 3개 · 하트를 모두 잃으면 쓰러진 곳에서 이어 할지 골라요',
+            '무한 목숨 · 쓰러져도 가까운 이정표에서 다시 일어나요',
+            '쉬움 · 다치지 않아요(게임이 서툴러도 끝까지)',
+          ], { tag: '<span class="tag note">플레이 방식</span>' });
+          G.save.reset();
+          G.save.data.settings.difficulty = ['lives', 'normal', 'easy'][mode] || 'lives'; G.save.write();
+          SC.startLevel('P1');
         } else if (a === 'cont') {
           const o = SC.order(); const next = o.find((lv) => !d.cleared[lv]);
           if (!next) SC.go(new G.ResultScene()); else SC.go(new G.MapScene(next));

@@ -86,6 +86,10 @@
       el.addEventListener('pointerup', end);
       el.addEventListener('pointercancel', end);
       el.addEventListener('pointerleave', end);
+      // 사파리: 버튼 위 터치의 기본 동작(두 번 탭 확대·클릭 흉내)을 끈다. 입력은 위의 포인터 이벤트가 맡는다.
+      const stop = (e) => { if (e.cancelable) e.preventDefault(); };
+      el.addEventListener('touchstart', stop, { passive: false });
+      el.addEventListener('touchend', stop, { passive: false });
     }
     I.layoutTouch();
   };
