@@ -87,10 +87,11 @@ const U = G.util = {
 
 // 옛한글을 제대로 조합해 그리는 글꼴을 찾아 CSS 변수(--yet)에 넣는다.
 G.pickYetFont = async function () {
-  const candidates = ['Noto Serif KR', 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', 'Noto Serif CJK KR', 'Noto Sans CJK KR', 'Source Han Serif K', 'Noto Sans KR', 'HCR Batang', '함초롬바탕', 'NanumMyeongjo YetHangul'];
+  // 첫째는 게임에 넣은 옛한글 글꼴(assets/fonts). 파일로 열어 글꼴을 못 불러올 때만 기기 글꼴을 찾는다.
+  const candidates = ['Gwandong Yet', 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', 'Noto Serif CJK KR', 'Noto Sans CJK KR', 'Source Han Serif K', 'HCR Batang', '함초롬바탕', 'NanumMyeongjo YetHangul'];
   const probe = G.yet('[ㅎㆍ][ㄷㆍ][ㅂㆍㄹ]');
   const c = document.createElement('canvas').getContext('2d');
-  try { await document.fonts.load('32px "Noto Serif KR"', probe + '가'); } catch (e) { /* 오프라인 */ }
+  try { await Promise.race([document.fonts.load('32px "Gwandong Yet"', probe + '가'), G.util.sleep(6)]); } catch (e) { /* 오프라인·파일로 열기 */ }
   for (const f of candidates) {
     c.font = `32px "${f}", monospace`;
     const w = c.measureText(probe).width;

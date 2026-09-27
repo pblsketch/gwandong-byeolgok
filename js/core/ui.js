@@ -80,7 +80,7 @@
         <div class="text"></div><div class="more">▼</div>`,
         `dlg t-${type} ${isHanji ? 'hanji' : ''} ${ptSrc ? 'has-portrait' : ''}`);
       const tx = el.querySelector('.text');
-      const full = type === 'orig' ? ui.yet(o.text) : o.text;
+      const full = type === 'orig' ? ui.yet(o.text) : G.input.keys(o.text);
       const chars = Array.from(full);
       let n = 0, done = false, timer;
       const tick = () => {
@@ -153,7 +153,7 @@
       const el = add(`
         <div class="fiction">
           <div class="top"><span class="tag game"><b class="mk">虛</b>게임 설정</span><span class="big">${esc(f.title || '잠깐! 이건 게임 설정이에요')}</span></div>
-          <div class="body">${esc(f.body)}</div>
+          <div class="body">${esc(G.input.keys(f.body))}</div>
           ${f.real ? `<div class="real hanji"><span class="lab"><b class="mk red">實</b>원문에서는</span>${esc(f.real)}</div>` : ''}
           <div class="foot"><button class="btn game">알겠어요 ▶</button></div>
         </div>`, 'overlay');
@@ -165,7 +165,7 @@
   };
 
   // ---------------------------------------------------------------- 퀴즈
-  const KIND = { mind: '마음 읽기', expression: '표현법', symbol: '시어·상징', allusion: '고사·인물', meaning: '뜻풀이', place: '여정', boss: '시구 대결' };
+  const KIND = ui.KIND = { mind: '마음 읽기', expression: '표현법', symbol: '시어·상징', allusion: '고사·인물', meaning: '뜻풀이', place: '여정', boss: '시구 대결' };
   ui.quiz = function (q, opt = {}) {
     return new Promise((resolve) => {
       const kind = opt.kind || KIND[q.type] || '문제';
@@ -243,7 +243,7 @@
     setTimeout(() => el.remove(), 3700);
   };
   ui.toast = function (text, type, sec = 2.2) {
-    const el = add(esc(text), 'toast' + (type ? ' ' + type : ''));
+    const el = add(esc(G.input.keys(text)), 'toast' + (type ? ' ' + type : ''));
     el.style.animationDuration = sec + 's';
     if (sec > 3) el.style.whiteSpace = 'normal';
     setTimeout(() => el.remove(), sec * 1000 + 100);
@@ -267,7 +267,7 @@
           <div class="row">한자 병기 ${seg('hanja', [[true, '켜기'], [false, '끄기']])}</div>
           <div class="row">현대어 풀이 ${seg('modern', [[true, '보이기'], [false, '숨기기']])}</div>
           <div class="row">음악 ${seg('music', [[true, '켜기'], [false, '끄기']])}</div>
-          <div class="row" style="opacity:.7">조작: ←→ 이동 · Space 점프 · J 붓 · K 옥절 · L 마음 전환 · E 대화</div>
+          <div class="row" style="opacity:.7">조작: ←→ 이동 · ↑/Space 점프 · A 붓 · S 옥절 · D 마음 전환 · Enter 대화 · Esc 멈춤</div>
         </div>`, 'overlay');
       const done = (a) => { close(); resolve(a); };
       el.addEventListener('click', (e) => {
@@ -334,7 +334,7 @@
           h += `<div class="mut">게임을 재미있게 만들려고 지어낸 것들이에요. 청록색 상자와 虛 인장은 모두 '상상'이에요.</div>`;
           for (const k in window.GD.fiction) {
             const f = window.GD.fiction[k];
-            h += `<div class="entry"><h4><span class="tag game">虛</span>${esc(f.name || f.title)}</h4><div>${esc(f.body)}</div>${f.real ? `<div class="mut"><b class="mk red">實</b>원문에서는 ${esc(f.real)}</div>` : ''}</div>`;
+            h += `<div class="entry"><h4><span class="tag game">虛</span>${esc(f.name || f.title)}</h4><div>${esc(G.input.keys(f.body))}</div>${f.real ? `<div class="mut"><b class="mk red">實</b>원문에서는 ${esc(f.real)}</div>` : ''}</div>`;
           }
         } else if (t === 'info') {
           const I = KB.info || {};
@@ -412,7 +412,8 @@
         </div>`, 'overlay');
       const card = el.querySelector('.sortcard'), ex = el.querySelector('.explain'), dots = el.querySelectorAll('.progress i');
       let lock = false;
-      const show = () => { card.textContent = list[k].t; card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; };
+      // 새 카드가 나오면 앞 카드의 해설은 지운다(앞 문항의 답이 이번 문항의 답처럼 보이지 않게)
+      const show = () => { card.textContent = list[k].t; ex.innerHTML = ''; card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; };
       const answer = (real) => {
         if (lock) return;
         const it = list[k];

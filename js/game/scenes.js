@@ -61,7 +61,7 @@
       A.drawProp(ctx, imm ? 'feather' : 'okjeol', 0, 0, { center: true, scale: 0.6 });
       ctx.restore();
       txt(ctx, imm ? '신선의 마음' : '관리의 마음', 34, 44, 10, '#fff', 'left');
-      if (d.unlock.feather) txt(ctx, '(L 전환)', 34 + (imm ? 58 : 58), 44, 8, 'rgba(255,255,255,.7)', 'left');
+      if (d.unlock.feather && !I.isTouch) txt(ctx, '(D 전환)', 92, 44, 8, 'rgba(255,255,255,.7)', 'left');
     }
     if (w.id === 'EF') {
       A.drawProp(ctx, 'wine', G.W - 118, 16, { center: true, scale: 0.7 });
@@ -80,8 +80,10 @@
     const ch = SC.chapterOf(w.id);
     if (ch && !(w.boss && !w.boss.dead)) txt(ctx, `${ch.name} · ${w.def.name}`, G.W / 2, 14, 9, 'rgba(255,255,255,.85)', 'center');
     // 조작 도움말(앞부분만)
-    if (!I.isTouch && ['P1', '1B', '2A'].includes(w.id) && w.time < 40) {
-      const help = w.id === '2A' ? 'L 마음 전환 · 신선: 2단 점프 / 점프 꾹 = 활공' : w.id === '1B' ? 'J 붓 · K 옥절(관리의 마음) · Esc 멈춤·편람' : '←→ 이동 · Space 점프 · J 붓 · E/Enter 대화 넘기기';
+    // 2A의 마음 전환 도움말은 학의 깃을 얻은 뒤부터 보여 준다
+    const helpOn = w.id === '2A' ? d.unlock.feather && w.time - (w.helpFrom || 0) < 40 : w.time < 40;
+    if (!I.isTouch && ['P1', '1B', '2A'].includes(w.id) && helpOn) {
+      const help = w.id === '2A' ? 'D 마음 전환 · 신선: 2단 점프 / 점프 꾹 = 활공' : w.id === '1B' ? 'A 붓 · S 옥절(관리의 마음) · Esc 멈춤·편람' : '←→ 이동 · ↑/Space 점프 · A 붓 · Enter 대화 넘기기';
       txt(ctx, help, 10, G.H - 10, 9, 'rgba(255,255,255,.8)', 'left');
     }
     if (w.boss && !w.boss.dead) w.boss.drawBar(ctx);
@@ -105,6 +107,10 @@
     constructor(id) { this.id = id; }
     enter() {
       const def = G.levels[this.id];
+      // 장 고르기·선생님용으로 중간 장부터 시작해도 앞 장에서 얻는 능력(옥절·학의 깃)은 갖고 시작한다
+      const o = SC.order(), k = o.indexOf(this.id), un = G.save.data.unlock;
+      if (k > o.indexOf('P1') && !un.okjeol) { un.okjeol = true; G.save.write(); }
+      if (k > o.indexOf('2A') && !un.feather) { un.feather = true; G.save.write(); }
       const w = this.world = new G.World(def);
       def.build(w);
       if (!w.start) w.setStart(2, 3);

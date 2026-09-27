@@ -77,23 +77,30 @@
 
   let last = 0, acc = 0;
   const STEP = 1 / 60;
+  let errShown = 0;
   function frame(ts) {
+    // 다음 프레임을 먼저 걸어 둔다: 한 곳에서 오류가 나도 게임 전체가 멈추지 않게
+    requestAnimationFrame(frame);
     const t = ts / 1000;
     let dt = last ? t - last : STEP;
     last = t;
     if (dt > 0.25) dt = 0.25;
     acc += dt;
     let n = 0;
-    while (acc >= STEP && n < 5) {
-      G.scenes.update(STEP);
-      G.input.endFrame();
-      acc -= STEP; n++;
+    try {
+      while (acc >= STEP && n < 5) {
+        G.scenes.update(STEP);
+        G.input.endFrame();
+        acc -= STEP; n++;
+      }
+      if (n === 5) acc = 0;
+      ctx.setTransform(G.renderScale, 0, 0, G.renderScale, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      G.scenes.draw(ctx);
+    } catch (e) {
+      acc = 0; G.input.endFrame();
+      if (errShown++ < 3) console.error(e);
     }
-    if (n === 5) acc = 0;
-    ctx.setTransform(G.renderScale, 0, 0, G.renderScale, 0, 0);
-    ctx.imageSmoothingEnabled = false;
-    G.scenes.draw(ctx);
-    requestAnimationFrame(frame);
   }
 
   async function boot() {

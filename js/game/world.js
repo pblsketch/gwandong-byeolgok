@@ -41,7 +41,7 @@
     }
     ground(x0, x1, h, skin) { for (let x = x0; x < x1; x++) for (let k = 0; k < h; k++) this.set(x, this.h - 1 - k, SOLID, skin); return this; }
     clear(x0, x1, h0, h1) { for (let x = x0; x < x1; x++) for (let k = h0; k < h1; k++) this.set(x, this.h - 1 - k, EMPTY); return this; }
-    block(x, h, w, hh, skin) { for (let i = 0; i < w; i++) for (let k = 0; k < hh; k++) this.set(x + i, this.h - h - k, SOLID, skin); return this; }  // 바닥이 높이 h-hh .. 윗면이 높이 h
+    block(x, h, w, hh, skin) { for (let i = 0; i < w; i++) for (let k = 0; k < hh; k++) this.set(x + i, this.h - h + k, SOLID, skin); return this; }  // 바닥이 높이 h-hh .. 윗면이 높이 h
     plat(x, h, w, skin = 'plank') { for (let i = 0; i < w; i++) this.set(x + i, this.h - h, ONEWAY, skin); return this; }
     hazard(x0, x1, h = 1) { for (let x = x0; x < x1; x++) for (let k = 0; k < h; k++) this.set(x, this.h - 1 - k, HAZARD); this.water.push({ x0, x1, h }); return this; }
     wy(h) { return (this.h - h) * TS; }                  // 높이 h의 표면 월드 y

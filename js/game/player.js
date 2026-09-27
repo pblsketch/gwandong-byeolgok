@@ -167,7 +167,7 @@
     }
     tryCast(w) {
       if (!this.unlocked('okjeol')) return;
-      if (this.mode !== 'official') { G.ui.toast('옥절은 관리의 마음일 때 쓸 수 있어요 (L로 전환)', 'game'); return; }
+      if (this.mode !== 'official') { G.ui.toast('옥절은 관리의 마음일 때 쓸 수 있어요 · 마음 전환{mind}', 'game'); return; }
       if (this.castCd > 0 || this.castT > 0) return;
       this.castT = 0.45; this.castCd = 0.9;
       G.audio.sfx('cast');

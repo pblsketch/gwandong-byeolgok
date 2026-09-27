@@ -1,5 +1,8 @@
 /* 관동별곡: 잃어버린 시구 — 화면 스타일
    --u : 게임 논리 해상도(640×360)의 1px이 화면에서 차지하는 크기. JS가 창 크기에 맞춰 넣는다. */
+/* 옛한글 조합 글꼴: Noto Serif KR에서 게임에 쓰인 글자와 옛한글 자모만 남긴 것(SIL OFL 1.1, assets/fonts/OFL.txt).
+   기기 글꼴에 기대지 않아 휴대폰에서도 ᄒᆞ·ᄯᅥ 같은 옛한글이 풀어지지 않는다. tools/build_yet_font.py로 다시 만든다. */
+@font-face { font-family: "Gwandong Yet"; src: url("../assets/fonts/yet-serif.woff2?v=1") format("woff2"); font-display: swap; }
 :root {
   --u: 1px;
   --ink: #1d1a16;
@@ -16,9 +19,10 @@
   --sky: #86cdea;
   --ok: #2f8f4e;
   --bad: #b3261e;
-  --yet: "Noto Serif KR", "Malgun Gothic", "Apple SD Gothic Neo", serif;
-  --serif: "Gowun Batang", "Noto Serif KR", "Batang", serif;
-  --sans: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --yet: "Gwandong Yet", "Malgun Gothic", "Apple SD Gothic Neo", serif;
+  /* 웹 글꼴(고운바탕·Noto KR)에는 옛한글 자모가 없어서, 자모는 바로 뒤의 옛한글 글꼴이 맡는다 */
+  --serif: "Gowun Batang", "Noto Serif KR", "Gwandong Yet", "Batang", serif;
+  --sans: "Noto Sans KR", "Gwandong Yet", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -223,7 +227,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .book .tabs { display: flex; gap: calc(var(--u)*4); padding: calc(var(--u)*10) calc(var(--u)*12) 0; }
 .book .tabs button { border: none; border-radius: calc(var(--u)*4) calc(var(--u)*4) 0 0; padding: calc(var(--u)*5) calc(var(--u)*10); font-weight: 700; font-size: calc(var(--u)*10); background: rgba(60,45,30,.12); }
 .book .tabs button.on { background: var(--ink); color: var(--hanji); }
-.book .tabs .x { margin-left: auto; }
+.book .tabs .x { margin-left: auto; border-radius: calc(var(--u)*4); background: var(--seal); color: #fff1e0; }
 .book .content { flex: 1; overflow-y: auto; padding: calc(var(--u)*10) calc(var(--u)*14); border-top: calc(var(--u)*2) solid var(--ink); font-size: calc(var(--u)*10); line-height: 1.6; }
 .entry { padding: calc(var(--u)*7) 0; border-bottom: calc(var(--u)*1) dashed rgba(60,45,30,.25); }
 .entry h4 { margin: 0 0 calc(var(--u)*3); font-family: var(--serif); font-size: calc(var(--u)*11.5); display: flex; gap: calc(var(--u)*6); align-items: center; }

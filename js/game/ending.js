@@ -155,7 +155,7 @@
     w.start = { x: f.x, y: f.y };
     w.trigger(0, 8, async (ww) => {
       ww.lockInput = true;
-      await ww.game('위(Space)로 떠오르고, 붓(J)을 누르면 술빛이 떨어져요. 어두운 마을마다 불을 밝혀 주세요!', 'sys');
+      await ww.game(G.input.isTouch ? '점프 버튼으로 떠오르고, 술빛 버튼을 누르면 술빛이 떨어져요. 어두운 마을마다 불을 밝혀 주세요!' : '↑(또는 Space)로 떠오르고, A를 누르면 술빛이 떨어져요. 어두운 마을마다 불을 밝혀 주세요!', 'sys');
       ww.lockInput = false;
     });
   };
@@ -324,7 +324,7 @@
 
   EN.wrongNote = function (list) {
     return new Promise((resolve) => {
-      const items = list.length ? list.map((q) => `<div class="entry"><h4><span class="tag orig">${esc(q.type || '문제')}</span>${esc(G.ui.yet(q.q))}</h4>
+      const items = list.length ? list.map((q) => `<div class="entry"><h4><span class="tag orig">${esc(G.ui.KIND[q.type] || q.type || '문제')}</span>${esc(G.ui.yet(q.q))}</h4>
         <div>정답: <b class="yet">${esc(G.ui.yet(q.choices[q.answer]))}</b></div><div class="mut">${esc(G.ui.yet(q.explain || ''))}</div></div>`).join('') : '<div class="entry">틀린 문제가 없어요.</div>';
       const el = G.ui.add(`<div class="panel hanji book"><div class="tabs"><button class="on">오답 노트</button><button class="x btn" data-x="1">닫기 ✕</button></div><div class="content">${items}</div></div>`, 'overlay');
       const done = () => { close(); resolve(); };

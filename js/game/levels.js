@@ -47,6 +47,8 @@
   W.lbl = function (x, h, text, opt) { return this.add(new E.Label(this.wx(x), this.wy(h), text, opt)); };
   W.start = null;
   W.setStart = function (x, h) { this.start = { x: this.wx(x) + 16, y: this.wy(h) }; this.checkpoint = { ...this.start }; };
+  // 이정표 없이 되살아날 자리만 바꾼다(어려운 구간 바로 앞)
+  W.savePoint = function (x, h) { this.trigger(x, x + 2, (ww) => { ww.checkpoint = { x: ww.wx(x) + 16, y: ww.wy(h) }; }, { cond: (ww) => Math.abs(ww.player.feet - ww.wy(h)) < TS * 2 }); };
   W.finish = function () { if (!this.done) { this.done = true; G.audio.sfx('bell'); } };
   W.fadeTo = function (sec = 0.6) { return G.scenes.fade(sec); };
   W.panTo = async function (x, y, sec) { this.camTarget = { x, y }; await U.sleep(sec); };
@@ -105,19 +107,20 @@
       w.trigger(0, 4, async (ww) => {
         ww.lockInput = true;
         await ww.fictionOnce('premise');
-        await ww.game('창평의 대숲이에요. ←→ 로 걷고 Space로 뛰어요.\n반짝이는 두루마리를 주우면 원문을 읽을 수 있어요.');
+        await ww.game(G.input.isTouch ? '창평의 대숲이에요. ◀ ▶ 버튼으로 걷고 점프 버튼으로 뛰어요.\n반짝이는 두루마리를 주우면 원문을 읽을 수 있어요.' : '창평의 대숲이에요. ←→ 로 걷고 ↑(또는 Space)로 뛰어요.\n반짝이는 두루마리를 주우면 원문을 읽을 수 있어요.');
         ww.lockInput = false;
       });
       w.onScroll('창평', async (ww) => { await ww.note('자연을 사랑하는 병이 깊어 대숲에 묻혀 지내던 화자에게, 임금이 관동 팔백 리를 맡겼어요. 서울로 올라가 임금께 인사를 드려야 해요.'); });
       w.onScroll('연추문', async (ww) => {
-        if (G.save.data.unlock.okjeol) return;
+        if (G.save.data.unlock.okjeol && G.save.data.seen.okjeol) return;   // 장 고르기로 먼저 열렸어도 안내는 한 번 본다
         ww.unlock('okjeol');
         G.audio.sfx('cast'); FX.flash('#fff3c4', 0.3);
         await ww.fictionOnce('okjeol');
-        await ww.game('이제 붓(J)으로 싸울 수 있어요. 앞에 수상한 먹물이 보여요!', 'jc', 'resolve');
+        await ww.game('이제 붓{attack}으로 싸울 수 있어요. 앞에 수상한 먹물이 보여요!', 'jc', 'resolve');
       });
       w.trigger(92, 94, async (ww) => { await ww.fictionOnce('blob'); });
-      w.blob(98, 3); w.blob(104, 3, { dir: 1 }); w.blob(110, 3);
+      // 옥절을 얻기 전(연추문 앞)까지 내려오지 않도록 제자리 근처만 오간다
+      w.blob(98, 3, { range: 3 }); w.blob(104, 3, { dir: 1, range: 3 }); w.blob(110, 3, { range: 3 });
       w.putLeftovers(114, 3);
       w.add(new E.Exit(w.wx(119), w.wy(3)));
     },
@@ -134,7 +137,7 @@
       for (let x = 10; x < 200; x += 7) w.ink(x, 4 + (x % 3), 1);
       w.setStart(3, 3);
       w.sign(8, 3, '평구역'); w.sign(55, 3, '흑수'); w.sign(100, 3, '섬강'); w.sign(146, 3, '치악');
-      w.trigger(0, 3, async (ww) => { ww.lockInput = true; await ww.fictionOnce('horse'); ww.lockInput = false; });
+      w.trigger(0, 5, async (ww) => { ww.lockInput = true; await ww.fictionOnce('horse'); ww.lockInput = false; });   // 시작 자리(3칸)를 덮어야 켜진다
       w.putScrolls('평구', [[66, 3]]);
       w.putScrolls('섬강', [[156, 3]]);
       w.putLeftovers(192, 3);
@@ -192,8 +195,9 @@
       // 폭포 물줄기(아래로 떠밀린다)
       w.add(new E.Current(w.wx(21), 0, 60, w.h * TS));
       w.add(new E.Current(w.wx(29), 0, 90, w.h * TS));
-      // 지그재그 발판 (가로 틈 2~3칸, 세로 2~3칸)
-      const plats = [[4, 4], [10, 7], [3, 9], [9, 12], [16, 14], [10, 17], [3, 19], [9, 22], [16, 24], [10, 27], [4, 29], [10, 32], [16, 34], [17, 37], [16, 40]];
+      // 지그재그 발판: 학의 깃(2단 점프)은 꼭대기 금강대에서 얻으므로 한 번 점프(최대 약 2.6칸)로 오르도록
+      // 층마다 2칸씩 높이고, 옆 발판과는 붙이거나 1칸만 띄운다. 금강대 바위(x 0~13, 높이 40~42) 밑은 피한다.
+      const plats = [[3, 4], [8, 6], [13, 8], [8, 10], [3, 12], [8, 14], [14, 16], [9, 18], [4, 20], [9, 22], [15, 24], [10, 26], [4, 28], [9, 30], [14, 32], [9, 34], [14, 36], [15, 38], [14, 40]];
       for (const [x, h] of plats) w.plat(x, h, 5, 'plank');
       // 금강대(꼭대기 바위 마당)
       w.block(0, 42, 14, 2);
@@ -202,8 +206,8 @@
       w.sign(4, 42, '금강대');
       w.putScrolls('만폭', [[6, 2], [11, 22]]);
       w.putScrolls('금강대', [[10, 42]]);
-      w.blob(11, 12); w.blob(12, 27);
-      w.ink(4, 9, 3); w.ink(17, 24, 3); w.ink(5, 29, 3);
+      w.blob(5, 12, { range: 1.5 }); w.blob(12, 26, { range: 1.5 });
+      w.ink(14, 8, 3); w.ink(5, 20, 3); w.ink(10, 30, 3);
       // 오른쪽 벼랑 너머 출구(활공해야 닿는다)
       w.block(36, 33, 8, 33);
       w.setStart(3, 2);
@@ -217,16 +221,17 @@
         await ww.note('귀로 들을 때는 우레 소리 같더니, 눈으로 보니 쏟아지는 눈 같다고 했어요. 소리(청각)를 먼저, 모습(시각)을 나중에 그려 폭포의 기세를 살렸어요.');
       });
       w.onScroll('금강대', async (ww) => {
-        if (G.save.data.unlock.feather) return;
+        if (G.save.data.unlock.feather && G.save.data.seen.feather) return;
         ww.lockInput = true;
         const crane = ww.add(new E.Sprite('npcs', 'crane', ww.wx(30), ww.wy(46), { z: 12, vx: -70, vy: 40 }));
         await U.sleep(1.6);
         crane.vx = 0; crane.vy = 0; crane.flip = false;
         FX.burst(ww.player.cx, ww.player.cy, 'feather', 30, { max: 160 });
         ww.unlock('feather');
+        ww.helpFrom = ww.time;
         ww.player.setMode('immortal', true);
         await ww.fictionOnce('feather');
-        await ww.game('오른쪽 벼랑 너머로 가야 해요. 신선의 마음(L)으로 두 번 뛰고, 점프를 꾹 누르면 활공해요!', 'crane');
+        await ww.game('오른쪽 벼랑 너머로 가야 해요. 신선의 마음{mind}으로 두 번 뛰고, 점프를 꾹 누르면 활공해요!', 'crane');
         crane.vx = 90; crane.vy = -50;
         ww.lockInput = false;
       });
@@ -241,6 +246,7 @@
       w.block(10, 6, 6, 3);
       w.sign(3, 3, '진헐대');
       w.putScrolls('진헐', [[13, 6], [30, 3]]);
+      w.trigger(6, 9, (ww) => { if (ww.player.mode !== 'immortal') G.ui.toast('높은 바위는 신선의 마음{mind}으로 바꿔 2단 점프!', 'game', 3.2); });
       w.blob(22, 3); w.blob(36, 3, { dir: 1 });
       // 음보 석판 + 낭떠러지
       w.hazard(42, 52, 1);
@@ -311,12 +317,12 @@
       }));
       // 그늘진 벼랑(음애)과 시든 풀
       w.block(24, 14, 8, 11);
-      w.vines = [[21, 5, 3], [21, 8, 3], [21, 11, 3], [22, 14, 2]];
+      w.vines = [[21, 5, 3], [21, 7, 3], [21, 9, 3], [21, 11, 3], [22, 13, 2]];   // 2칸 간격: 관리의 마음으로도 오른다
       w.deadGrass = [];
       for (const [x, h, n] of w.vines) for (let i = 0; i < n; i++) w.deadGrass.push(w.add(new E.Prop('grass_dead', w.wx(x + i) + 16, w.wy(h) + 6, { z: 2 })));
       w.trigger(9, 11, async (ww) => {
         if (G.save.data.unlock.okjeol && !ww.deadGrass[0].name.includes('live')) {
-          await ww.game('못 속에 늙은 용이 서려 있어요. 제단 앞에서 관리의 마음으로 옥절(K)을 들어 볼까요?', 'jc', 'awe');
+          await ww.game('못 속에 늙은 용이 서려 있어요. 제단 앞에서 관리의 마음으로 옥절{cast}을 들어 볼까요?', 'jc', 'awe');
         }
       });
       w.putScrolls('화룡', [[28, 14]]);
@@ -324,6 +330,7 @@
       // 외나무다리
       w.bgAt(66, 'bg_cliff');
       w.hazard(62, 98, 1);
+      w.savePoint(58, 3);
       w.plat(62, 4, 36, 'plank');
       w.add(new E.Bird(w.wx(80), w.wy(7), 'crow', { dir: -1, speed: 60 }));
       w.blob(74, 4, { range: 3 }); w.blob(88, 4, { range: 3 });
@@ -353,7 +360,7 @@
         G.audio.play('boss');
         await ww.fictionOnce('libai');
         await ww.game('여산 폭포를 노래한 이 이백 앞에서 폭포 자랑이라니! 시구로 겨뤄 봅시다.', 'libai');
-        await ww.game('빈틈이 생기면(빛날 때) 붓(J)으로 치세요. 시구 대결에서 이기면 반격해요!', 'sys');
+        await ww.game('빈틈이 생기면(빛날 때) 붓{attack}으로 치세요. 시구 대결에서 이기면 반격해요!', 'sys');
         boss.phase = 'rain'; boss.pt = 0;
         ww.checkpoint = { x: ww.arena.x0 + 60, y: ww.wy(3) };
         ww.lockInput = false;
@@ -382,6 +389,8 @@
       w.putScrolls('해당', [[80.5, 3]]);
       // 총석정: 바다 위 돌기둥
       w.hazard(84, 132, 1);
+      w.savePoint(81, 3);
+      w.trigger(80, 83, (ww) => { if (ww.player.mode !== 'immortal') G.ui.toast('돌기둥 사이가 멀어요 · 신선의 마음{mind}으로 바꿔 2단 점프!', 'game', 3.2); });
       const pil = [[86, 5], [91, 7], [96, 6], [101, 8], [106, 6], [111, 5], [116, 7], [121, 6], [126, 5]];
       for (const [x, h] of pil) w.block(x, h, 2, h, 'granite');
       for (const [x, h] of pil) w.deco('pillar', x + 1, h, { scale: 0.55, dy: 2 });
@@ -438,7 +447,8 @@
         ww.sunEvent = { t: 0, spawned: 0, reached: 0 };
         G.audio.play('sea');
       });
-      w.onCloudReach = (ww) => { ww.sunEvent.reached++; ww.sun.dim = Math.min(1, ww.sun.dim + 0.25); G.audio.sfx('wrong'); G.ui.toast('녈구름이 해를 가렸다!', 'game'); };
+      // 구름(E.Cloud)이 해에 닿으면 불린다. 인자는 구름이므로 세계는 바깥의 w를 쓴다.
+      w.onCloudReach = () => { if (!w.sunEvent) return; w.sunEvent.reached++; w.sun.dim = Math.min(1, w.sun.dim + 0.25); G.audio.sfx('wrong'); G.ui.toast('녈구름이 해를 가렸다!', 'game'); };
       w.tick = (ww, dt) => {
         const ev = ww.sunEvent;
         if (!ev || ev.done) return;
@@ -497,13 +507,15 @@
       w.ground(102, 196, 3, 'grass');
       w.sign(106, 3, '죽서루');
       w.block(112, 7, 12, 4, 'granite');
+      w.plat(109, 5, 3);   // 누각(높이 7)으로 오르는 디딤판: 관리의 마음으로도 오른다
       w.deco('nugak', 118, 7, { scale: 0.9 });
       w.putScrolls('죽서', [[117, 7]]);
       w.putScrolls('진주', [[114, 7]]);
       // 갈림길: 위는 구름길(신선), 아래는 물길(연군)
       for (const [x, h] of [[126, 9], [131, 11], [136, 12], [142, 11], [147, 9]]) w.plat(x, h, 4, 'cloud');
-      w.hazard(128, 150, 2);
-      for (const x of [129, 134, 139, 144]) w.block(x, 3, 2, 3, 'granite');
+      // 아래 물길: 땅을 파내 물을 채우고, 2칸 간격 징검돌을 놓는다(관리의 마음으로도 건넌다)
+      w.clear(128, 149, 0, 3).hazard(128, 149, 2);
+      for (const x of [129, 133, 137, 141, 145]) w.block(x, 3, 2, 3, 'granite');
       w.lbl(137, 14.2, '두우(斗牛)로 가는 신선의 길', { size: 9, bg: 'rgba(6,36,40,.9)', color: '#bff7f0', edge: '#22c3b5' });
       w.lbl(137, 4.6, '한강 목멱으로 흐르는 물길', { size: 9, bg: 'rgba(6,36,40,.9)', color: '#bff7f0', edge: '#22c3b5' });
       w.trigger(123, 125, async (ww) => { ww.lockInput = true; await ww.fictionOnce('crossroads'); ww.lockInput = false; });
@@ -524,6 +536,7 @@
     build(w) {
       w.ground(0, 40, 3);
       w.block(6, 6, 12, 3);
+      w.plat(4, 5, 2);   // 망양정 언덕(높이 6)으로 오르는 디딤판
       w.deco('pavilion', 12, 6, { scale: 0.8 });
       w.sign(3, 3, '망양정');
       w.putScrolls('망양', [[11, 6]]);
@@ -551,7 +564,7 @@
         }));
         G.audio.play('boss');
         await ww.fictionOnce('whale');
-        await ww.game('파도를 뛰어넘고 물기둥을 피하다가, 고래가 물가로 머리를 내밀면 붓(J)으로 치세요!', 'sys');
+        await ww.game('파도를 뛰어넘고 물기둥을 피하다가, 고래가 물가로 머리를 내밀면 붓{attack}으로 치세요!', 'sys');
         boss.phase = 'waves'; boss.pt = 0; boss.n = 0;
         ww.checkpoint = { x: ww.wx(29), y: ww.wy(3) };
         ww.lockInput = false;

@@ -1,15 +1,15 @@
 'use strict';
 // 입력: 키보드 + 터치 버튼을 같은 '행동'으로 묶는다.
 (function () {
+  // 기본 배치: 오른손 방향키(↑ = 점프), 왼손 A 붓 · S 옥절 · D 마음 전환.
+  // J·K·L, Z·X·C, Space도 그대로 쓸 수 있다. 여러 행동을 맡은 키는 배열로 적는다(메뉴에서는 첫 행동만 쓴다).
+  // Shift는 붓에 쓰지 않는다: 윈도에서 연달아 다섯 번 누르면 '고정 키' 창이 뜬다.
   const KEYMAP = {
-    ArrowLeft: 'left', KeyA: 'left',
-    ArrowRight: 'right', KeyD: 'right',
-    ArrowUp: 'up', KeyW: 'up',
-    ArrowDown: 'down', KeyS: 'down',
+    ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: ['up', 'jump'], ArrowDown: 'down',
     Space: 'jump', KeyZ: 'jump',
-    KeyJ: 'attack', KeyX: 'attack',
-    KeyK: 'cast', KeyC: 'cast',
-    KeyL: 'mind', ShiftLeft: 'mind', ShiftRight: 'mind', KeyQ: 'mind',
+    KeyA: 'attack', KeyJ: 'attack', KeyX: 'attack',
+    KeyS: 'cast', KeyK: 'cast', KeyC: 'cast',
+    KeyD: 'mind', KeyL: 'mind', KeyQ: 'mind', ShiftLeft: 'mind', ShiftRight: 'mind',
     Enter: 'ok', KeyE: 'ok', NumpadEnter: 'ok',
     Escape: 'pause', KeyP: 'pause',
     Digit1: 'n1', Digit2: 'n2', Digit3: 'n3', Digit4: 'n4', Digit5: 'n5',
@@ -31,22 +31,23 @@
     lastDevice: 'key',
   };
 
+  // 안내 글 속 키 이름: 문장에 {attack}처럼 적으면 키보드는 (A), 터치는 빈칸(버튼 이름이 곧 행동 이름)으로 바꾼다
+  const KEYNAME = { jump: '↑', attack: 'A', cast: 'S', mind: 'D', ok: 'Enter', pause: 'Esc' };
+  I.hint = (a) => (I.isTouch ? '' : `(${KEYNAME[a]})`);
+  I.keys = (s) => String(s).replace(/\{(jump|attack|cast|mind|ok|pause)\}/g, (m, a) => I.hint(a));
+
   window.addEventListener('keydown', (e) => {
-    const a = KEYMAP[e.code];
-    if (!a) return;
+    const acts = [].concat(KEYMAP[e.code] || []);
+    if (!acts.length) return;
     if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.code)) e.preventDefault();
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
     I.lastDevice = 'key';
     G.audio && G.audio.unlock();
-    for (let i = I.listeners.length - 1; i >= 0; i--) { if (I.listeners[i](a, e)) { e.preventDefault(); return; } }
-    if (!down[a]) pressed[a] = true;
-    down[a] = true;
+    for (let i = I.listeners.length - 1; i >= 0; i--) { if (I.listeners[i](acts[0], e)) { e.preventDefault(); return; } }
+    for (const a of acts) { if (!down[a]) pressed[a] = true; down[a] = true; }
   });
   window.addEventListener('keyup', (e) => {
-    const a = KEYMAP[e.code];
-    if (!a) return;
-    down[a] = false;
-    released[a] = true;
+    for (const a of [].concat(KEYMAP[e.code] || [])) { down[a] = false; released[a] = true; }
   });
   window.addEventListener('blur', () => { for (const k in down) down[k] = false; for (const k in touchDown) touchDown[k] = false; });
 

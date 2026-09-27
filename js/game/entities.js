@@ -48,6 +48,13 @@
   // ---------------------------------------------------------------- 줍는 것
   E.Scroll = class {
     constructor(x, y, id) { this.x = x - 12; this.y = y - 34; this.w = 24; this.h = 26; this.id = id; this.t = Math.random() * 6; this.z = 5; }
+    // 지형 속에 묻혔으면(레벨을 고치다 생기는 실수) 빈 칸이 나올 때까지 한 칸씩 위로 올린다
+    init(w) {
+      const buried = () => [[2, 2], [this.w - 2, 2], [2, this.h + 6], [this.w - 2, this.h + 6]].some(([dx, dy]) => w.solidAtPx(this.x + dx, this.y + dy));
+      let n = 0;
+      while (buried() && n < w.h) { this.y -= TS; n++; }
+      if (n) { this.lifted = n; console.warn(`두루마리 ${this.id}(${w.id})가 지형에 묻혀 ${n}칸 올렸어요`); }
+    }
     update(dt, w) {
       this.t += dt;
       const p = w.player;
@@ -145,8 +152,14 @@
     update(dt, w) {
       this.t += dt; if (this.flash > 0) this.flash -= dt;
       const p = w.player;
+      if (this.flee > 0) this.flee -= dt;
       if (this.kb > 0) { this.kb -= dt; this.x += this.vx * dt; this.y += this.vy * dt; this.vy += 600 * dt; }
-      else {
+      else if (this.flee > 0) {
+        // 바람에 밀려 달아나는 중: 높이 올라 멀어진다(덤벼들지 않는다)
+        this.dive = 0; this.baseY += (this.homeY - 70 - this.baseY) * dt * 2;
+        this.y = this.baseY + Math.sin(this.t * 3) * this.amp * 0.3;
+        this.x += this.dir * this.speed * 1.6 * dt;
+      } else {
         if (this.homeY === undefined) this.homeY = this.baseY;
         if (p && this.dive <= 0 && Math.abs(p.cx - this.x) < 120 && Math.random() < dt * 1.5) this.dive = 0.8;
         if (this.dive > 0) { this.dive -= dt; this.baseY += (p.cy - 8 - this.baseY) * dt * 2.4; }
@@ -157,6 +170,8 @@
       }
       this.touch(w);
     }
+    // 신선의 마음(바람)에 맞으면 잠시 달아난다: 2단 점프가 필요한 곳에서도 막을 방법이 있게
+    push(v) { super.push(v); if (this.homeY === undefined) this.homeY = this.baseY; this.dir = Math.sign(v) || this.dir; this.flee = 3.5; }
     draw(ctx) { A.frame(ctx, 'enemies', this.kind, this.t, this.x + this.w / 2, this.y + this.h / 2 + 4, this.dir > 0, { flash: this.flash > 0 ? 0.8 : 0 }); }
   };
 
@@ -249,7 +264,8 @@
     constructor(x, y, place, opt = {}) { this.x = x - 10; this.y = y - 52; this.w = 20; this.h = 52; this.place = place; this.opt = opt; this.hit = false; this.z = 2; }
     update(dt, w) {
       const p = w.player;
-      if (!this.hit && p && p.cx > this.x) {
+      // 같은 높이 가까이 왔을 때만(높은 곳의 이정표가 아래에서 먼저 켜지지 않게)
+      if (!this.hit && p && p.cx > this.x && Math.abs(p.feet - (this.y + 52)) < TS * 3) {
         this.hit = true;
         w.checkpoint = { x: this.x + 10, y: this.y + 52 };
         const info = (window.GD.places || {})[this.place] || {};
