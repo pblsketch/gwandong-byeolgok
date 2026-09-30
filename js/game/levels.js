@@ -274,6 +274,9 @@
       w.sign(56, 3, '망고대·혈망봉');
       w.block(62, 5, 3, 2); w.block(66, 8, 2, 5); w.block(70, 15, 3, 12); w.block(75, 10, 2, 7);
       w.plat(63, 11, 2); w.plat(67, 13, 2);
+      // 봉우리 사이 좁은 틈에 떨어져도 기어 나올 수 있게 발판을 층층이 둔다(관리의 마음 한 번 점프로도 오를 간격)
+      w.plat(68, 5, 2); w.plat(68, 7, 2);
+      w.plat(73, 5, 2); w.plat(73, 7, 2); w.plat(73, 9, 2);
       w.putScrolls('망고', [[71, 15]]);
       w.putScrolls('혈망', [[71.5, 15]]);
       w.blob(80, 3); w.blob(88, 3);
@@ -547,7 +550,7 @@
 
   // ================================================================ 4장: 망양정 (보스: 노한 고래)
   def('4', {
-    name: '망양정', chapter: 4, w: 64, h: 14, bg: 'bg_stormsea', bgm: 'sea', skin: 'grass', weather: 'spray', waterColor: 'rgba(40,96,140,.9)',
+    name: '망양정', chapter: 4, w: 64, h: 14, bg: 'bg_stormsea', bgm: 'storm', skin: 'grass', weather: 'spray', waterColor: 'rgba(40,96,140,.9)',
     build(w) {
       w.ground(0, 40, 3);
       w.block(6, 6, 12, 3);

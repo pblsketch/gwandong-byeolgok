@@ -11,7 +11,7 @@ window.GD = {
     { id: 1, name: '1장', title: '부임길: 한양에서 회양까지', levels: ['1A', '1B'], bgm: 'journey' },
     { id: 2, name: '2장', title: '내금강: 만폭동에서 불정대까지', levels: ['2A', '2B', '2C'], bgm: 'mountain' },
     { id: 3, name: '3장', title: '관동팔경: 산영루에서 죽서루까지', levels: ['3A', '3B', '3C'], bgm: 'sea' },
-    { id: 4, name: '4장', title: '망양정: 성난 바다', levels: ['4'], bgm: 'sea' },
+    { id: 4, name: '4장', title: '망양정: 성난 바다', levels: ['4'], bgm: 'storm' },
     { id: 5, name: '종장', title: '꿈: 신선과 한 잔', levels: ['E'], bgm: 'night' },
   ],
 

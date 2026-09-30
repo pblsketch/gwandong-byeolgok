@@ -140,6 +140,7 @@
       if (FX.hitstop > 0) { FX.hitstop -= dt; FX.update(0); FX.shakeT > 0 && FX.update(0.0001); return; }
       w.update(dt);
       FX.update(dt);
+      this.watchStuck(dt);
       // 터치 버튼 갱신
       I.setTouchButton('attack', !!G.save.data.unlock.okjeol || w.def.runner);
       I.setTouchButton('cast', !!G.save.data.unlock.okjeol && !w.def.runner);
@@ -151,9 +152,68 @@
       const a = await G.ui.pause({ inLevel: true });
       this.pausing = false;
       if (a === 'book') { await G.ui.book(); }
-      else if (a === 'restart') { this.world.player.respawn(this.world); }
+      else if (a === 'stuck') { await this.escape(false); }
       else if (a === 'map') { SC.go(new G.MapScene()); }
       else if (a === 'title') { SC.go(new TitleScene()); }
+    }
+    // 막힘 살피기: 구덩이 따위에 갇혀 한 자리(가로 4칸·세로 3칸 안)에서 25초 넘게 점프만 되풀이하면 빠져나갈 길을 묻는다
+    watchStuck(dt) {
+      const w = this.world, p = w.player, TS = G.TS;
+      if (this.stuckCd > 0) this.stuckCd -= dt;
+      if (w.lockInput || w.cutscene || w.boss || w.def.runner || p.out || this.pausing) { this.stuck = null; return; }
+      const s = this.stuck || (this.stuck = { x: p.cx, y: p.feet, t: 0, jumps: 0 });
+      if (p.onGround && (Math.abs(p.cx - s.x) > TS * 4 || Math.abs(p.feet - s.y) > TS * 3)) { this.stuck = null; return; }
+      s.t += dt;
+      if (I.pressed('jump')) s.jumps++;
+      if (s.t > 25 && s.jumps >= 6 && !(this.stuckCd > 0)) { this.stuck = null; this.escape(true); }
+    }
+    // 빠져나가기: 지나온 시구 문제를 맞히면 학의 깃이 높이 띄워 올리고, 아니면 가까운 이정표로 돌아간다
+    async escape(auto) {
+      const w = this.world, p = w.player;
+      this.pausing = true;
+      let first = true;
+      for (;;) {
+        const i = await G.ui.choice(first
+          ? (auto ? '빠져나갈 길이 안 보이나요? 이렇게 빠져나갈 수 있어요.' : '길이 막혔나요? 이렇게 빠져나갈 수 있어요.')
+          : '다시 골라 볼까요?', [
+          '지나온 시구 문제를 풀고 학의 깃으로 높이 날아오르기',
+          '가까운 이정표로 돌아가기',
+          auto ? '조금 더 해 볼게요' : '그대로 계속하기',
+        ], { tag: '<span class="tag game">길 찾기</span><span class="tag note">막혔을 때</span>' });
+        first = false;
+        if (i === 0) {
+          const q = this.escapeQuiz();
+          if (!q) { G.ui.toast('아직 푼 시구가 없어요. 이정표로 돌아갈게요', 'game'); p.respawn(w, null); break; }
+          const ok = await G.ui.quiz(q, { kind: '길 찾기 문제', sub: '맞히면 학의 깃이 높이 띄워 줘요', noRecord: true });
+          if (ok) { this.liftUp(); break; }
+          continue;
+        }
+        if (i === 1) p.respawn(w, '가까운 이정표로 돌아왔어요 (목숨은 그대로예요)');
+        break;
+      }
+      this.stuck = null; this.stuckCd = auto ? 45 : 10;
+      this.pausing = false;
+    }
+    // 이미 주운 두루마리의 문제 가운데 하나(이 구간 것을 먼저). 하나도 없으면 이 구간 문제에서.
+    escapeQuiz() {
+      const KB = window.KB || {}, d = G.save.data;
+      const quizzes = KB.quizzes || [], scrolls = KB.scrolls || [];
+      const levelOf = (q) => (scrolls.find((x) => x.id === q.scroll) || {}).level;
+      const got = quizzes.filter((q) => d.scrolls[q.scroll]);
+      const here = got.filter((q) => levelOf(q) === this.id);
+      const pool = here.length ? here : got.length ? got : quizzes.filter((q) => levelOf(q) === this.id);
+      if (!pool.length) return null;
+      let q = pool[Math.floor(Math.random() * pool.length)];
+      if (pool.length > 1 && q === this.lastEscapeQ) q = pool[(pool.indexOf(q) + 1) % pool.length];
+      this.lastEscapeQ = q;
+      return q;
+    }
+    liftUp() {
+      const w = this.world, p = w.player;
+      p.vy = -1080; p.vx = 0; p.jumps = 0; p.invT = Math.max(p.invT, 1.5); p.sq = 1.3;
+      G.audio.sfx('jump2');
+      FX.burst(p.cx, p.feet, 'feather', 24, { angle: Math.PI / 2, spread: 1.6, max: 160 });
+      G.ui.toast('학의 깃이 높이 띄워 올렸어요! ←→로 안전한 곳에 내려앉아요', 'game', 3);
     }
     async gameOver() {
       if (this.over) return;
@@ -256,7 +316,7 @@
         </div>
         <button class="btn ghost fullbtn" data-a="full" style="position:absolute;right:calc(var(--u)*12);top:calc(var(--u)*10);background:rgba(243,234,212,.85)">전체 화면</button>
         <div style="position:absolute;right:calc(var(--u)*14);bottom:calc(var(--u)*10);font-size:calc(var(--u)*7.5);color:#3b3328;text-align:right;line-height:1.5;background:rgba(243,234,212,.7);padding:calc(var(--u)*4) calc(var(--u)*8);border-radius:calc(var(--u)*3)">
-          <b style="font-family:var(--serif);font-size:calc(var(--u)*8.5)">만든이 박준일</b> (온양여자고등학교 국어 교사)<br><b class="mk red">實</b>붉은 두루마리 = 원문 · <b class="mk tealmk">虛</b>청록 상자 = 게임 속 상상<br>그림: Codex CLI(gpt-image-2) 생성 · 소리: 웹 오디오로 합성한 창작 국악
+          <b style="font-family:var(--serif);font-size:calc(var(--u)*8.5)">만든이 박준일</b> (온양여자고등학교 국어 교사)<br><b class="mk red">實</b>붉은 두루마리 = 원문 · <b class="mk tealmk">虛</b>청록 상자 = 게임 속 상상<br>그림: Codex CLI(gpt-image-2) 생성 · 배경음: 국립국악원 「디지털 이음」 국악기 악구(공공누리 제1유형)
         </div>`, 'menu');
       const btns = Array.from(el.querySelectorAll('.mbtn'));
       const nav = G.ui.focusNav(btns, has ? 1 : 0);

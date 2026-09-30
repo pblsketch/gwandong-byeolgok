@@ -102,7 +102,9 @@
 
 - **그림**: Codex CLI의 이미지 생성(gpt-image-2)으로 직접 만들었습니다. 프롬프트는 `tools/make_prompts.py`, 생성 스크립트는 `tools/gen.ps1`·`tools/genqueue.ps1`에 있습니다.
 - **가공**: `tools/process_assets.py`가 배경 제거 → 프레임 자동 검출 → 발밑 피벗 정렬 → PPU(32px) 기준 축소를 합니다.
-- **배경음악**: 장면별 창작곡 7곡(평조·계면조, 굿거리·세마치·자진모리 등)을 `js/core/audio.js`의 `TRACKS`에 악보로 적어 두었습니다. 가야금(Karplus-Strong 합성)·대금·해금·장구·북·징 소리를 브라우저에서 합성해 연주합니다.
+- **배경음악**: 국립국악원 [디지털 이음](https://www.gugak.go.kr/digitaleum/front/phrase/list.do) 「국악기 디지털 음원」 악구(공공누리 제1유형, 출처표시)를 번호 순서대로 이어 붙인 실제 연주 8곡(`assets/bgm/*.mp3`)을 틉니다. 곡과 장면의 짝은 `js/data/bgm.js`에서 바꿀 수 있습니다.
+  - 서장·제목 거문고 산조(중모리) · 1장 가야금 경기민요 · 2장 가야금 산조(중중모리) · 3장 가야금 경기민요 · 4장 거문고 산조(엇모리) · 보스 태평소 시나위(자진모리) · 해돋이·달밤 대금 산조(진양조) · 꿈 소금 연례악(수제천)
+  - 파일을 못 읽으면 `js/core/audio.js`의 `TRACKS`에 악보로 적어 둔 창작곡을 브라우저에서 합성해 대신 연주합니다(가야금 Karplus-Strong·대금·해금·장구·북·징). 효과음은 모두 합성음입니다.
 - **옛한글 글꼴**: 휴대폰마다 기본 글꼴이 달라 ᄒᆞ·ᄯᅥ 같은 옛한글이 풀어져 보이는 것을 막으려고, 옛한글 조합 기능이 있는 [Noto Serif KR](https://github.com/notofonts/noto-cjk)에서 게임에 쓰인 글자와 옛한글 자모만 남긴 글꼴(`assets/fonts/yet-serif.woff2`, 약 460KB, SIL OFL 1.1 — `assets/fonts/OFL.txt`)을 함께 넣었습니다. 원문을 고쳐 새 현대 한글·한자가 생겼다면 `python tools/build_yet_font.py`로 다시 만드세요(방법은 파일 첫머리에 있어요). 옛한글 자모는 통째로 들어 있어 새 옛한글 음절도 조합됩니다.
 - **코드**: HTML5 Canvas + 순수 JavaScript(빌드 도구 없음).
 

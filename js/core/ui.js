@@ -276,7 +276,7 @@
             <div class="pcol">
               <button class="btn" data-a="resume">계속하기</button>
               <button class="btn ghost" data-a="book">관동 편람 (원문·인물·상징)</button>
-              ${opts.inLevel ? '<button class="btn ghost" data-a="restart">체크포인트에서 다시</button>' : ''}
+              ${opts.inLevel ? '<button class="btn ghost" data-a="stuck">길이 막혔어요 (빠져나가기)</button>' : ''}
               ${opts.inLevel ? '<button class="btn ghost" data-a="map">월드맵으로</button>' : ''}
               <button class="btn ghost" data-a="title">타이틀로</button>
               <button class="btn ghost" data-full="1">전체 화면 켜기·끄기</button>

@@ -1,5 +1,6 @@
 'use strict';
-// 소리: 브라우저 안에서 국악기 소리를 합성하고, 직접 작곡한 곡을 악보(아래 TRACKS)대로 연주한다.
+// 소리: 배경음은 js/data/bgm.js의 녹음 국악(국립국악원 악구)을 먼저 틀고, 파일이 없거나 못 읽으면
+//  브라우저 안에서 국악기 소리를 합성해 직접 작곡한 곡을 악보(아래 TRACKS)대로 연주한다. 효과음은 모두 합성.
 //  - 가야금: 줄을 튕기는 소리를 흉내 내는 Karplus-Strong 합성 + 농현(떨기)
 //  - 대금: 사인파 + 숨소리 + 늦게 들어오는 떨림, 음 사이를 미끄러지듯 잇기
 //  - 해금: 톱니파를 걸러 낸 비음 섞인 활 소리
@@ -11,7 +12,7 @@
   const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
   A.unlock = function () {
-    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); if (window.BGM) prime(); A.resumeFile(); return; }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     ctx = new AC();
@@ -35,10 +36,11 @@
     const revLp = ctx.createBiquadFilter(); revLp.type = 'lowpass'; revLp.frequency.value = 5200;
     revIn.connect(rev); rev.connect(revLp); revLp.connect(revOut); revOut.connect(comp);
     A.ctx = ctx;
+    if (window.BGM) prime();
     if (A.pendingTrack) { const t = A.pendingTrack; A.pendingTrack = null; A.play(t); }
   };
-  A.setMuted = function (m) { A.muted = m; if (master) master.gain.value = m ? 0 : 1; };
-  A.setMusicVol = function (v) { A.musicVol = v; if (musicBus) musicBus.gain.value = v; };
+  A.setMuted = function (m) { A.muted = m; if (master) master.gain.value = m ? 0 : 1; elemVol(); };
+  A.setMusicVol = function (v) { A.musicVol = v; if (musicBus) musicBus.gain.value = v; elemVol(); };
 
   let noiseBuf = null;
   function noise() {
@@ -308,6 +310,7 @@
     },
   };
   TRACKS.sad = TRACKS.night;
+  TRACKS.storm = TRACKS.sea;   // 4장 망양정(파일이 없을 때는 바다 곡으로)
 
   function buildTrack(def) {
     const u = def.unit, ev = [];
@@ -371,11 +374,98 @@
 
   let sched = null, loopStart = 0, idx = 0, cur = null;
   const built = {};
+  // ---------------------------------------------------------------- 녹음한 국악(파일) 배경음
+  // audio 요소 두 개를 번갈아 쓴다(곡을 바꿀 때 겹쳐 흐르고, iOS에서도 한 번 손댄 요소는 계속 틀 수 있게).
+  //  웹(http/https)에서는 WebAudio 길(musicBus)로 이어 음량·끄기가 합성음과 같게, file://에서는 요소 음량으로 조절한다.
+  const viaGraph = /^https?:$/.test(location.protocol);
+  const SILENT = 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+  const decks = [], failed = {};
+  let fileCur = null;
+  function makeDecks() {
+    if (decks.length) return;
+    for (let i = 0; i < 2; i++) {
+      const el = new Audio();
+      el.loop = true; el.preload = 'auto';
+      const d = { el, busy: false, primed: false, bus: null, level: 0 };
+      if (viaGraph) {
+        el.crossOrigin = 'anonymous';
+        try { d.bus = ctx.createGain(); d.bus.gain.value = 0.0001; ctx.createMediaElementSource(el).connect(d.bus); d.bus.connect(musicBus); } catch (e) { d.bus = null; }
+      }
+      if (!d.bus) el.volume = 0;
+      decks.push(d);
+    }
+  }
+  // 첫 손댐 때 빈 소리를 한 번 틀어 두 요소 모두 '사용자가 허락한' 상태로 만든다
+  function prime() {
+    makeDecks();
+    for (const d of decks) {
+      if (d.primed || d.busy) continue;
+      d.primed = true;
+      d.el.src = SILENT;
+      const pr = d.el.play();
+      if (pr && pr.then) pr.then(() => { if (!d.busy) d.el.pause(); }, () => { d.primed = false; });
+    }
+  }
+  // file://에서는 요소 음량 = 곡 음량 × 음악 음량(끄면 0)
+  function elemVol() {
+    for (const d of decks) if (!d.bus) { try { d.el.volume = A.muted ? 0 : Math.min(1, A.musicVol * d.level); } catch (e) { /* 음량을 못 바꾸는 기기 */ } }
+  }
+  // 곡 음량 배율을 to로 secs초 동안 옮긴다
+  function fade(d, to, secs, done) {
+    clearInterval(d.fade); clearTimeout(d.off); d.fade = d.off = null;
+    if (d.bus) {
+      const g = d.bus.gain, now = ctx.currentTime;
+      g.cancelScheduledValues(now);
+      g.setValueAtTime(Math.max(0.0001, g.value), now);
+      g.exponentialRampToValueAtTime(Math.max(0.0001, to), now + Math.max(0.02, secs));
+      d.level = to;
+      if (done) d.off = setTimeout(done, secs * 1000 + 100);
+      return;
+    }
+    const from = d.level, t0 = Date.now();
+    const tick = () => {
+      const k = secs > 0 ? Math.min(1, (Date.now() - t0) / (secs * 1000)) : 1;
+      d.level = from + (to - from) * k; elemVol();
+      if (k >= 1) { clearInterval(d.fade); d.fade = null; if (done) done(); }
+    };
+    d.fade = setInterval(tick, 50);
+    tick();
+  }
+  function startFile(name) {
+    makeDecks();
+    const t = window.BGM.tracks[name];
+    const d = decks.find((x) => !x.busy) || decks[0];
+    const me = { name, d };
+    fileCur = me;
+    d.busy = true;
+    fade(d, 0, 0);
+    d.el.onerror = () => fallback();
+    d.el.src = t.src;
+    fade(d, t.gain || 1, 1.2);
+    function fallback() { if (fileCur !== me) return; failed[name] = true; A.track = null; A.play(name); } // 파일을 못 읽으면 합성음으로
+    const pr = d.el.play();
+    if (pr && pr.catch) pr.catch((e) => { if (e && (e.name === 'NotAllowedError' || e.name === 'AbortError')) return; fallback(); }); // 허락 전이면 다음 손댐 때 다시
+  }
+  function releaseFile(fast) {
+    if (!fileCur) return;
+    const d = fileCur.d;
+    fileCur = null;
+    d.el.onerror = null;
+    fade(d, 0, fast ? 0.8 : 1.5, () => {
+      if (fileCur && fileCur.d === d) return; // 그새 다시 쓰이면 그대로
+      try { d.el.pause(); d.el.removeAttribute('src'); d.el.load(); } catch (e) { /* 무시 */ }
+      d.busy = false;
+    });
+  }
+  // 허락 전에 막혔던 파일 곡을 손댐 때 다시 튼다
+  A.resumeFile = function () { if (fileCur && fileCur.d.el.paused && !document.hidden) fileCur.d.el.play().catch(() => {}); };
+
   A.play = function (name) {
-    if (A.track === name && sched) return;
+    if (A.track === name && (sched || fileCur)) { A.resumeFile(); return; }
     A.track = name;
     if (!ctx) { A.pendingTrack = name; return; }
     A.stopMusic(true);
+    if (window.BGM && window.BGM.tracks[name] && !failed[name]) { startFile(name); return; }
     const def = TRACKS[name];
     if (!def) return;
     cur = Object.assign({}, built[name] || (built[name] = buildTrack(def)));
@@ -399,6 +489,7 @@
     sched = setInterval(tick, 70);
   };
   A.stopMusic = function (fast) {
+    releaseFile(fast);
     if (sched) { clearInterval(sched); sched = null; }
     if (cur && cur.bus && ctx) {
       const b = cur.bus; b.gain.cancelScheduledValues(ctx.currentTime);
